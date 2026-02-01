@@ -431,7 +431,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "${Realmz_VERSION_MINOR}")
 set(CPACK_SOURCE_GENERATOR "TGZ")
 
 if(WIN32)
-    set(CPACK_GENERATOR "NSIS")
+    set(CPACK_GENERATOR "NSIS;ZIP")
     set(CPACK_NSIS_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 elseif(APPLE)
     configure_file(bundle/Info.plist.in Info.plist)

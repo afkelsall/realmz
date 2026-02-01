@@ -10,11 +10,11 @@ Realmz is a classic, turn-based RPG, originally developed for early Macintosh co
 
 _WARNING: This is a beta release. The game may be unstable, crashes may occur, and save game and character data may become corrupted. If you have saves or character files that you care about, we strongly suggest regularly backing up your user data directory (`%AppData%\Fantasoft\Realmz` on Windows and `~/Library/Application\ Support/Fantasoft/Realmz` on Mac)._
 
-Download the latest release for your system from the releases page. Scroll down to and expand the "Assets" section. Download the `.dmg` file for Mac, and the `.exe` file for Windows.
+Download the latest release for your system from the releases page. Scroll down to and expand the "Assets" section. Download the `.dmg` file for Mac, and the `.exe` or `.zip` files for Windows.
 
 On Mac, double click the `.dmg` file you downloaded, then click and drag the Realmz bundle into your Applications folder.
 
-On Windows, double click the `.exe` installer. Accept the license agreement, choose an install location for Realmz, and continue through the "components" section of the installer.
+On Windows, you can either use the installer wizard for automatic installation, or a ZIP archive for custom installations. To use the installer, double click the `.exe` you downloaded. Accept the license agreement, choose an install location for Realmz, and continue through the "components" section of the installer.
 
 # Reporting Bugs
 
