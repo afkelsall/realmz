@@ -1423,7 +1423,11 @@ noreg:
   showmagic = GetCIcon(2001);
   HLock((Handle)showmagic);
 
-  strcpy(&fileinfo.fdCreator, (StringPtr) "RLMZ");
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * The original code used `strcpy(&fileinfo.fdCreator, (StringPtr) "RLMZ")`
+   * here, but that writes an extra byte out of range of the fdCreator field!
+   */
+  fileinfo.fdCreator = 0x524C4D5A; /* 'RLMZ' */
 
   greencolor.green = 65535;
 
@@ -2087,7 +2091,7 @@ short regscen(void) {
   if (tempvalue < 0)
     tempvalue *= -1;
 
-    // Fantasoft v7.0 BEGIN
+  // Fantasoft v7.0 BEGIN
 #ifdef PC
 //
 #else
