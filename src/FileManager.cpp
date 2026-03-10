@@ -35,8 +35,8 @@ std::string normalize_mac_path(const std::string& mac_path, bool implicitly_loca
   return ret;
 }
 
-std::string userdata_filename_for_mac_filename(const std::string& mac_path) {
-  std::string ret = normalize_mac_path(mac_path, false);
+std::string userdata_filename_for_mac_filename(const std::string& mac_path, bool implicitly_local = false) {
+  std::string ret = normalize_mac_path(mac_path, implicitly_local);
 
   return user_basepath + ret;
 }
@@ -60,11 +60,20 @@ std::string host_filename_for_FSSpec(const FSSpec* fsp) {
   if (fsp->vRefNum != 0) {
     throw std::runtime_error(std::format("FSSpec vRefNum is not zero (received {})", fsp->vRefNum));
   }
-  if ((fsp->parID != 0) && (fsp->parID != -1)) {
-    throw std::runtime_error(std::format("FSSpec parID is not 0 or -1 (received {})", fsp->parID));
+  if ((fsp->parID != 0) && (fsp->parID != 1)) {
+    throw std::runtime_error(std::format("FSSpec parID is not 0 or 1 (received {})", fsp->parID));
   }
 
-  return host_filename_for_mac_filename(string_for_pstr<64>(fsp->name), (fsp->parID == -1));
+  // Most uses of FSSpecs in Realmz have a parID of 0. The only time it is 1 is
+  // in pref.c, where FindFolder is called to locate the System Preferences folder.
+  // To signify this, FindFolder sets parID to the 1 sentinel value. In this case,
+  // we want to use the userdata folder for storing preferences. Otherwise, we should
+  // use the base directory of the executable to load game resource files.
+  if (fsp->parID == 1) {
+    return userdata_filename_for_mac_filename(string_for_pstr<64>(fsp->name), true);
+  } else {
+    return host_filename_for_mac_filename(string_for_pstr<64>(fsp->name), false);
+  }
 }
 
 OSErr GetVInfo(int16_t drvNum, StringPtr volName, int16_t* vRefNum, int32_t* freeBytes) {
@@ -129,11 +138,10 @@ OSErr FSMakeFSSpec(int16_t vRefNum, int32_t dirID, ConstStr255Param fileName, FS
 
 OSErr FindFolder(int16_t vRefNum, OSType folderType, Boolean createFolder, int16_t* foundVRefNum, int32_t* foundDirID) {
   // This is only used by Realmz for getting the Preferences folder (which in
-  // Classic Mac OS is within the System Folder). Here, we just use the local
-  // working directory instead, and we signal this by setting the directory ID
-  // to -1.
+  // Classic Mac OS is within the System Folder). Here, we just use the userdata
+  // directory instead, and we signal this by setting the directory ID to 1.
   *foundVRefNum = 0;
-  *foundDirID = -1;
+  *foundDirID = 1;
   return noErr;
 }
 
@@ -147,7 +155,7 @@ FILE* mac_fopen(const char* filename, const char* mode) {
   std::string user_filename = userdata_filename_for_mac_filename(filename);
   std::string host_filename{};
 
-  // When writing, we should always write to the user preferences folder. When
+  // When writing, we should always write to the userdata folder. When
   // reading, we should first check to see if the file exists in the user's directory,
   // which allows users to override the data and resource files.
   if (mode[0] == 'w' || std::filesystem::exists(user_filename)) {
