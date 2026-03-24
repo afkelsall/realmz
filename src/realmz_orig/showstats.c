@@ -54,9 +54,9 @@ void ShowStats(short showprestige) {
   if (characterl.condition[3])
     temp -= 5; /**** curse ***/
   if (characterl.condition[2])
-    temp -= characterl.condition[2]; /*** tangled ***/
+    temp -= abs(characterl.condition[2]); /*** tangled ***/
   if (characterl.condition[36])
-    temp -= characterl.condition[36]; /*** Hinder atk ***/
+    temp -= abs(characterl.condition[36]); /*** Hinder atk ***/
   temp += (characterl.damage * 5); /*** Hinder atk ***/
 
   if (temp > 99)
@@ -74,9 +74,9 @@ void ShowStats(short showprestige) {
   if (characterl.condition[3])
     temp -= 5; /*** curse ***/
   if (characterl.condition[37])
-    temp -= characterl.condition[37]; /*** hinder defense ***/
+    temp -= abs(characterl.condition[37]); /*** hinder defense ***/
   if (characterl.condition[38])
-    temp += characterl.condition[38]; /*** defense bonus ***/
+    temp += abs(characterl.condition[38]); /*** defense bonus ***/
   temp += characterl.ac; /*** Hinder atk ***/
   if (temp > 99)
     TextSize(16);
