@@ -187,9 +187,10 @@ NSMenu* MCCreateSubMenu(NSString* title, const Menu& menuRes, const std::list<st
 void MCSync(std::shared_ptr<MenuList> menuList, void (*callback)(int16_t, int16_t)) {
   NSApplication* application = [NSApplication sharedApplication];
 
-  id newMenu = [[MCMenuBar alloc] initWithMenuListCallback:*menuList callback:callback];
+  static MCMenuBar* currentMenuBar = nil;
+  currentMenuBar = [[MCMenuBar alloc] initWithMenuListCallback:*menuList callback:callback];
 
-  application.mainMenu = [newMenu menuObject];
+  application.mainMenu = [currentMenuBar menuObject];
 }
 
 void MCCreatePopupMenu(void *nsWindow, std::shared_ptr<Menu> menu, std::pair<int16_t, int16_t> loc, void (*callback)(int16_t, int16_t)) {

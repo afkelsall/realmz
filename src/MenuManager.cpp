@@ -76,6 +76,12 @@ public:
 
   void insert_submenu(MenuHandle handle) {
     auto menu = this->get_menu(handle);
+    for (auto& existing : this->cur_menu_list->submenus) {
+      if (existing->menu_id == menu->menu_id) {
+        existing = menu;
+        return;
+      }
+    }
     this->cur_menu_list->submenus.emplace_back(menu);
   }
 
