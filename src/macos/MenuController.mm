@@ -157,7 +157,7 @@ NSMenu* MCCreateSubMenu(NSString* title, const Menu& menuRes, const std::list<st
     [menuItem setAction:@selector(MCHandlePopupMenuClick:)];
     id menuIdentifier = [[MCMenuItemIdentifier alloc] initWithRawIds:menu->menu_id itemId:itemId];
     [menuItem setRepresentedObject:menuIdentifier];
-    menuItem.enabled = true;
+    menuItem.enabled = item.enabled;
     [_contextualMenu addItem:menuItem];
   }
 

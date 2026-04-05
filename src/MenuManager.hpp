@@ -6,12 +6,12 @@
 struct Menu {
   struct Item {
     std::string name;
-    uint8_t icon_number;
-    char key_equivalent;
-    char mark_character; // In MacRoman; use decode_mac_roman if needed
-    uint8_t style_flags; // See TextStyleFlag
-    bool enabled;
-    bool checked;
+    uint8_t icon_number = 0;
+    char key_equivalent = 0;
+    char mark_character = 0; // In MacRoman; use decode_mac_roman if needed
+    uint8_t style_flags = 0; // See TextStyleFlag
+    bool enabled = true;
+    bool checked = false;
 
     Item() = default;
     ~Item() = default;

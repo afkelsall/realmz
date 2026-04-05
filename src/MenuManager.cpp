@@ -104,18 +104,16 @@ public:
       }
     }
 
-    auto& menu_list = this->cur_menu_list->submenus;
-    for (auto m = menu_list.begin(); m != menu_list.end(); m++) {
+    for (auto m = this->cur_menu_list->submenus.begin(); m != this->cur_menu_list->submenus.end(); m++) {
       if ((*m)->menu_id == menu_id) {
-        menu_list.erase(m);
+        this->cur_menu_list->submenus.erase(m);
         return;
       }
     }
 
-    menu_list = this->cur_menu_list->menus;
-    for (auto m = menu_list.begin(); m != menu_list.end(); m++) {
+    for (auto m = this->cur_menu_list->menus.begin(); m != this->cur_menu_list->menus.end(); m++) {
       if ((*m)->menu_id == menu_id) {
-        menu_list.erase(m);
+        this->cur_menu_list->menus.erase(m);
         return;
       }
     }
@@ -221,12 +219,10 @@ void DisableItem(MenuHandle theMenu, uint16_t item) {
   auto menu = mm.get_menu(theMenu);
   if (item == 0) {
     menu->enabled = false;
+  } else if (item <= menu->items.size()) {
+    menu->items[item - 1].enabled = false;
   } else {
-    if (item > menu->items.size()) {
-      mm_log.warning_f("Attempted to disable MENU:{} item {}, but it doesn't exist", menu->menu_id, item);
-    } else {
-      menu->items[item - 1].enabled = false;
-    }
+    mm_log.warning_f("Attempted to disable MENU:{} item {}, but it doesn't exist", menu->menu_id, item);
   }
   mm.sync();
 }
@@ -235,12 +231,10 @@ void EnableItem(MenuHandle theMenu, uint16_t item) {
   auto menu = mm.get_menu(theMenu);
   if (item == 0) {
     menu->enabled = true;
+  } else if (item <= menu->items.size()) {
+    menu->items[item - 1].enabled = true;
   } else {
-    if (item > menu->items.size()) {
-      mm_log.warning_f("Attempted to enable MENU:{} item {}, but it doesn't exist", menu->menu_id, item);
-    } else {
-      menu->items[item - 1].enabled = true;
-    }
+    mm_log.warning_f("Attempted to enable MENU:{} item {}, but it doesn't exist", menu->menu_id, item);
   }
   mm.sync();
 }
