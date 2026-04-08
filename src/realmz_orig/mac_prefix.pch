@@ -34,7 +34,7 @@
 #define SetSoundVol(x) SetDefaultOutputVolume(x << 16)
 
 inline void GetSoundVol(short *x) {
-    long v;
+    int32_t v;
     GetDefaultOutputVolume(&v);
     *x = v >> 16;
 }

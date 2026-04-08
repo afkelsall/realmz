@@ -239,7 +239,7 @@ short picklock(short who, short type) {
   Rect r1, temprect;
   short one[6], delta, jump, chance;
   short yellow, green, tumblers, temp, temp2;
-  long start, limit;
+  int32_t start, limit;
 
   if ((who < 0) || (who > charnum))
     return (0);

@@ -4,7 +4,7 @@
 /***************************** ShowStats ********************************/
 void ShowStats(short showprestige) {
   short t, conditionindex = 0;
-  long prestige = 0;
+  int32_t prestige = 0;
   char special[50], specialindex;
 
   gCurrent = gGeneration;

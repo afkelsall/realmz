@@ -89,7 +89,7 @@ extern struct item blank100;
 extern struct storage storage[6];
 
 extern short storageitems[180];
-extern long wealthstore[3];
+extern int32_t wealthstore[3];
 extern short tempfield[90][90];
 
 extern struct mapstats mapstats[402], holdstatbase;
@@ -110,7 +110,7 @@ extern Boolean usequickshow, collideflag;
 extern short usecustomnames;
 extern char lastdeltax, lastdeltay;
 extern short musictoggle[20];
-extern long musicpostionsave[20];
+extern int32_t musicpostionsave[20];
 extern PixPatHandle gHilite, gNeutral, gShadow, base, light, dark, whitepat;
 extern Boolean notes[3000];
 extern CGrafPtr savedPort;
@@ -133,7 +133,7 @@ extern short todoqueindex, macromonster;
 extern Str255 codeseg3, codeseg4;
 extern Boolean spellarea[18][7][7];
 extern short fumque[20], fumtotal, fumloop;
-extern long appnum;
+extern int32_t appnum;
 extern Boolean physical, battlemacro, doingque, macro, cycle, nologo, nofade;
 
 extern char autonote, portraitchoice, currentscenariohold, blank3; /****** additional preference varialbles *******/
@@ -141,7 +141,7 @@ extern short journalindex2, blank5, blank6, blank7, blank8, blank9, blank10;
 
 extern Handle data_handle;
 extern short Appl_Rsrc_Fork_Ref_Num;
-extern long serial, showserial;
+extern int32_t serial, showserial;
 extern Str255 Name_String;
 extern MenuHandle musicmenu, gNPC, gManual;
 extern Boolean okout, lowHD, cleanup;
@@ -158,7 +158,7 @@ extern MenuHandle copy, prefer, gApple, gFile, gGame, gOptions, gSpelldelay, gSp
 extern Rect buttons;
 extern char currentDepth, undox, undoy;
 extern short resetvolume;
-extern long menuChoice;
+extern int32_t menuChoice;
 extern short theMenu, theItem, nummon, numfoes, battlenum, adjdam;
 
 extern short gDone, gStop, skip, middle, ischar, first, shop, skiptest, inspell, blank, lg, poss, regenerate;
@@ -222,13 +222,13 @@ extern Boolean inscroll, indung, view, editon, incamp, initems, inswap, inbooty,
 extern Boolean intemple, inshop, swapavail, templeavail, tradeavail, canshop, shopequip, lastcaste;
 extern char lastspell[6][2], combatround, lastpix;
 extern short currentscenario, howhard, fat, partycondition[10];
-extern long x, y, wallx, wally, dunglevel, partyx, partyy, reclevel, maxlevel, landlevel, lookx, looky, fieldx, fieldy, floorx, floory;
-extern long moneypool[3];
+extern int32_t x, y, wallx, wally, dunglevel, partyx, partyy, reclevel, maxlevel, landlevel, lookx, looky, fieldx, fieldy, floorx, floory;
+extern int32_t moneypool[3];
 extern struct tm tyme;
 extern struct tm magic_tyme;
 extern char multiview, updatedir;
 extern char monsterset, bankavailable;
-extern long bank[3];
+extern int32_t bank[3];
 extern short templecost;
 extern char inboat, boatright, canencounter;
 extern char xydisplayflag;
@@ -238,9 +238,9 @@ extern short heldover, deduction;
 extern short duration;
 extern Boolean displaytag, hide;
 extern short blankround;
-extern long mouseuptime;
+extern int32_t mouseuptime;
 extern Handle myMenuBar, copywright;
-extern long templong;
+extern int32_t templong;
 extern short select[6];
 extern Boolean needupdate, shortupdateneed, putup;
 extern short mapshiftx, mapshifty, divineref, itemrefnum, refnum, jewelsrefnum, portraitrefnum;
@@ -248,7 +248,7 @@ extern short tacticalrefnum;
 
 extern struct note note;
 
-extern long oldtime;
+extern int32_t oldtime;
 extern Rect tiny[24];
 
 extern struct maps themap;
@@ -262,7 +262,7 @@ extern Rect buttonrect;
 extern short trace[3][maxloop];
 extern short specdamage, numitems;
 extern short flamestage, enctry;
-extern long oldflametick;
+extern int32_t oldflametick;
 extern short loop;
 extern short font;
 
@@ -279,7 +279,7 @@ extern short oldup, channel;
 extern RGBColor greencolor, greycolor, cyancolor, goldcolor, lightgrey;
 extern Rect sizestore, fieldstore;
 extern short oldspellx, oldspelly;
-extern long totalexp;
+extern int32_t totalexp;
 
 extern struct encount2 enc2;
 
@@ -316,7 +316,7 @@ extern char tagnew, tagold;
 extern short delta, thePart, shopselection;
 extern char itemselectnew;
 extern Rect charselectrect, box3, lookrect, box, info, textrect, greybox;
-extern long tempvalue;
+extern int32_t tempvalue;
 extern short value, gshopitem, selection, whichchar;
 extern short theCode, tempindex, tempselection, reply, pick;
 extern Point point;
@@ -327,7 +327,7 @@ extern struct character characterl, characterr, c[6];
 
 extern struct itemattr item, allweapons[200], allarmor[200], allhelms[200], allmagic[200], allsupply[200];
 
-extern long doorid;
+extern int32_t doorid;
 
 extern struct shop theshop;
 

@@ -114,7 +114,7 @@ ControlHandle NewControl(
     short min,
     short max,
     short proc_id,
-    long ref_con);
+    int32_t ref_con);
 void ShowControl(ControlHandle ctl);
 void HideControl(ControlHandle ctl);
 void GetControlBounds(ControlHandle ctrl, Rect* rect);

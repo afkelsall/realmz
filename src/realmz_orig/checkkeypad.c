@@ -2,7 +2,7 @@
 #include "variables.h"
 
 /**************************************** checklayout **************************/
-short checklayout(long currentlevel) {
+short checklayout(int32_t currentlevel) {
   short checkforlevel = -1;
   short newlevel = 0;
   short levelx, levely;

@@ -53,7 +53,7 @@ short cansee(short fromx, short fromy, short tox, short toy) {
 }
 
 /******************************** cansee2 *******************/
-short cansee2(long fromx, long fromy) {
+short cansee2(int32_t fromx, int32_t fromy) {
   short t, tt, curx, cury, deltax, deltay, stopx, stopy, hit;
 
   stopx = -5;

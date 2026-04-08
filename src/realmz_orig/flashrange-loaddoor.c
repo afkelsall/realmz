@@ -23,7 +23,7 @@ void flashrange(short which, short who) {
 }
 
 /****************************** loaddoor ****************************/
-void loaddoor(long id, short index) {
+void loaddoor(int32_t id, short index) {
   FILE* fp = NULL;
 
   if (indung) {

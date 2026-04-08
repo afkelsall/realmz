@@ -64,7 +64,7 @@ void combatchoice(void) {
   short hit, temptarget, hit0, hit1, hit2, hit3, itemnum;
   float dx, dy;
   short targetx, targety, pass, temptemp, shottry;
-  long oldtick;
+  int32_t oldtick;
   short t, tt, cost, spellindex, sumsize, sumsizelow, rotateindex = 0;
   Rect targetrect, goodrect;
   short spellxold, spellyold;

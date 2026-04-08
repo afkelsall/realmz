@@ -9,7 +9,7 @@
 /************ flashmessage ***********************/
 void flashmessage(Str255 strc, short x, short y, short duration, short toplay) /********** - duration = putup toggle ***** 0 duration = Wait for click *****/
 {
-  long oldtick;
+  int32_t oldtick;
   Rect blit, itemRect;
   char string[255];
 

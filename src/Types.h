@@ -26,7 +26,7 @@ typedef int32_t SInt32;
 
 typedef char* Ptr;
 typedef Ptr* Handle;
-typedef long Size;
+typedef int32_t Size;
 
 typedef SInt16 OSErr;
 typedef SInt32 OSStatus;
@@ -62,7 +62,7 @@ typedef Rect* RectPtr;
 
 typedef unsigned char Style;
 
-typedef long (*ProcPtr)(void);
+typedef int32_t (*ProcPtr)(void);
 
 typedef struct {
   UInt32 highLongOfPSN;

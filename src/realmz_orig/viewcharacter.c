@@ -3,7 +3,7 @@
 /************************* viewcharacter *************************/
 void viewcharacter(short view, short mode) {
   DialogRef aging;
-  long prestige = 0;
+  int32_t prestige = 0;
   Boolean changename = 0;
 
   if (!reducesound)

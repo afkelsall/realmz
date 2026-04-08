@@ -47,7 +47,7 @@ static void closepref(void) {
 /************************** savepref *************/
 void savepref(void) {
   Handle new_data_handle;
-  long magic;
+  int32_t magic;
 
   openpref(1);
   if (fPref) {
@@ -117,7 +117,7 @@ void savepref(void) {
 
 void getpref(void) {
   Handle data_handle;
-  long magic = 0L;
+  int32_t magic = 0L;
 
   openpref(0);
 
@@ -478,7 +478,7 @@ short createpref(FSSpec pref_FSSpec, short mode) {
 short openpref(short mode) {
   Str255 pref_file_name;
   short vol_ref;
-  long dir_ID;
+  int32_t dir_ID;
   FSSpec pref_FSSpec;
   short file_ref_num;
   short dummyrefnum = 0;

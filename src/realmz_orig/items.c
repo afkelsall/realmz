@@ -6,7 +6,7 @@ short items(void) {
   Boolean updatelist = FALSE;
   Boolean doit = FALSE;
   Boolean usecharge;
-  long mouseuptime = 0;
+  int32_t mouseuptime = 0;
   Point dclick;
   short temp, ts, ti, a, count, charge;
   char itemselectold, loop;

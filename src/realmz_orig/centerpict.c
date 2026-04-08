@@ -10,7 +10,7 @@ void centerpict(void) {
   Boolean isnote = 0;
   Boolean ispath = 0;
   Boolean issecret = 0;
-  long tempy;
+  int32_t tempy;
   register short tt, t;
   short tempicon;
   Rect source, bitrect, copyrect;

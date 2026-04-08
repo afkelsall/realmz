@@ -7,7 +7,7 @@ short regscen_pc_custom(void);
 extern Boolean tagger;
 
 /******************************* newland ****************************/
-short newland(long x, long y, short mode, short modecode, short data) {
+short newland(int32_t x, int32_t y, short mode, short modecode, short data) {
   struct door holddoorforbattle;
   short ttt, lr, ud, start, stop, posx, posy;
   static short holddoorposforbattle;

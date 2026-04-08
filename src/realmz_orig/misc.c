@@ -274,7 +274,7 @@ void mainscreeninit(short mode, short dostart) {
 /************************************ getexp **************************/
 void getexp(short level, short casteid, short who) {
   FILE* fp = NULL;
-  long value;
+  int32_t value;
 
   loadprofile(0, casteid); /************* load in caste profile to get vicotory points required *********/
 
@@ -500,7 +500,7 @@ void getcharrange(short body) {
 }
 
 /********************* GetDialogNum **************************/
-long GetDialogNum(short number) {
+int32_t GetDialogNum(short number) {
   GetDialogItem(gCurrent, number, &itemType, &itemHandle, &itemRect);
   GetDialogItemText(itemHandle, myString);
   StringToNum(myString, &tempvalue);

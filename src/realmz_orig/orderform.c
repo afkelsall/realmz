@@ -90,14 +90,14 @@ void orderform(void) {}
 void orderform(void) {
   THPrint Print_Record;
   TPPrPort printer_port;
-  long total = 0;
+  int32_t total = 0;
   Handle item1, item2;
   float exchange = 1;
   Boolean disk = FALSE;
   Boolean foreign = FALSE;
   Boolean set = FALSE;
   DialogRef regscreen, countryscreen;
-  long showserial; //*** fantasoft v7.1
+  int32_t showserial; //*** fantasoft v7.1
 
   regscreen = GetNewDialog(300, 0L, (WindowPtr)-1L);
   gCurrent = regscreen;

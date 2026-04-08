@@ -8,7 +8,7 @@ void makescroll(void) {
   // overflow if the party is good at collecting parchment, leading to an
   // invalid cicn ID in the GetCIcon call below. We've changed this to a long,
   // which should avoid this problem.
-  long numparch;
+  int32_t numparch;
   short t;
   Boolean free;
   scribing = inscroll = TRUE;

@@ -35,7 +35,7 @@ extern "C" void update_character_files_list() {
   std::sort(characters.begin(), characters.end());
 }
 
-extern "C" void get_character_info_from_list(unsigned long index, const char** name, short* level) {
+extern "C" void get_character_info_from_list(uint32_t index, const char** name, short* level) {
   try {
     const auto& ch = characters.at(index);
     if (!hidden_characters.count(ch.first)) {

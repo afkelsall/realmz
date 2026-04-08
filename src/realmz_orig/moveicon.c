@@ -186,6 +186,8 @@ void moveicon(void) {
 
   TextSize(13);
   GetIndString(myString, getselection(item.itemid) + lg, item.itemid - tempselection + 1);
+  if (lg && myString[0] == 0)
+    GetIndString(myString, getselection(item.itemid), item.itemid - tempselection + 1);
 
   if (item.iscurse) {
     temp = getselection(item.iscurse);

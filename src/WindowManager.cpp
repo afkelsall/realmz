@@ -1729,7 +1729,7 @@ ControlHandle NewControl(
     short min,
     short max,
     short proc_id,
-    long ref_con) {
+    int32_t ref_con) {
   auto w = WindowManager::instance().window_for_port(window);
   auto title_str = string_for_pstr<256>(title);
   auto control = Control::from_params(*bounds, value, min, max, proc_id, visible, title_str);

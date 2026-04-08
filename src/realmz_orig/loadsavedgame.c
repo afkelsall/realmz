@@ -6,8 +6,8 @@
 short load(void) {
   FILE* op = NULL;
   FILE* fp = NULL;
-  long savedserial = 0;
-  long testlocation, templong;
+  int32_t savedserial = 0;
+  int32_t testlocation, templong;
   WindowPtr splash = NIL;
   short t, choice, count;
   short tempVolRef;
@@ -109,6 +109,23 @@ short load(void) {
     return (0);
   }
   moneypool[0] = moneypool[1] = moneypool[2] = 0;
+
+  // NOTE(fuzziqersoftware): The initial build of Realmz Classic used the `long` type in various places, which compiles
+  // to a 64-bit integer on many modern systems. But this doesn't match the original builds, on which a `long` was a
+  // 32-bit integer. Since then, we've replaced all `long`s with `int32_t`s or `uint32_t`s, which makes the save file
+  // format compatible with the original builds, but incompatible with early builds of Realmz Classic! To handle both
+  // formats, we check the file size here and condition a few parts of the below logic on it.
+  fseek(fp, 0, SEEK_END);
+  size_t file_size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  int use_extended_long_format;
+  if (file_size == 0x3979) { // Original build format, or modern Realmz Classic format
+    use_extended_long_format = 0;
+  } else if (file_size == 0x398D) {
+    use_extended_long_format = 1;
+  } else {
+    scratch2(7);
+  }
 
 // Fantasoft v7.0 Begin   I don't want the PC and Mac saved games to be compatible so I switched the save order of
 // Some important data to keep them from being compatible
@@ -284,7 +301,21 @@ short load(void) {
   fread(&monsterset, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
   fread(&bankavailable, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
 
+  // NOTE(fuzziqersoftware): The original Realmz Classic format saved 3 64-bit integers here, but only saved the first
+  // 12 bytes of them due to the use of sizeof(int32_t). The byte layout in memory is (G=gold, M=gems, J=jewelry):
+  //   bank = GG GG GG GG GG GG GG GG MM MM MM MM MM MM MM MM JJ JJ JJ JJ JJ JJ JJ JJ
+  // But we only save the first 12 bytes to the file, which is:
+  //   bank = GG GG GG GG GG GG GG GG MM MM MM MM
+  // The correct format in the save file is (truncating off the high 32 bits of each field):
+  //   bank = GG GG GG GG MM MM MM MM JJ JJ JJ JJ
+  // Thankfully, it seems Myriad forgot to byteswap these fields, so we do actually get the low 32 bits of the gems
+  // value in the incorrect case, but the jewelry value is entirely lost. To recover from this, we can simply move the
+  // jewelry value to gems, and clear the jewelry value. (Sorry about that!)
   fread(&bank, sizeof(int32_t), 3, fp); //*** fantasoft v7.1b  broke it up so work on PC side
+  if (use_extended_long_format) {
+    bank[1] = bank[2];
+    bank[2] = 0;
+  }
 
   fread(&templecost, sizeof(short), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
   fread(&inboat, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
@@ -302,7 +333,13 @@ short load(void) {
   fread(&deduction, sizeof deduction, 1, fp);
   CvtShortToPc(&deduction);
 
-  fread(&savedserial, sizeof savedserial, 1, fp);
+  if (use_extended_long_format) {
+    int64_t savedserial64;
+    fread(&savedserial64, sizeof savedserial64, 1, fp);
+    savedserial = savedserial64;
+  } else {
+    fread(&savedserial, sizeof savedserial, 1, fp);
+  }
   CvtLongToPc(&savedserial);
 
   fread(&canpriestturn, sizeof canpriestturn, 1, fp);
@@ -331,17 +368,31 @@ short load(void) {
   fread(&storage, sizeof storage, 1, fp);
   CvtTabItemToPc(&storage, 6);
 
-  fread(&wealthstore, sizeof wealthstore, 1, fp);
+  if (use_extended_long_format) {
+    int64_t wealthstore64[3];
+    fread(&wealthstore64, sizeof wealthstore64, 1, fp);
+    wealthstore[0] = wealthstore64[0];
+    wealthstore[1] = wealthstore64[1];
+    wealthstore[2] = wealthstore64[2];
+  } else {
+    fread(&wealthstore, sizeof wealthstore, 1, fp);
+  }
   CvtTabLongToPc(&wealthstore, 3);
 
   fread(&registrationname, sizeof registrationname, 1, fp);
-  fread(&testlocation, sizeof testlocation, 1, fp);
+  if (use_extended_long_format) {
+    int64_t testlocation64;
+    fread(&testlocation64, sizeof testlocation64, 1, fp);
+    testlocation = testlocation64;
+  } else {
+    fread(&testlocation, sizeof testlocation, 1, fp);
+  }
   CvtLongToPc(&testlocation);
 
-  fwrite(&spellcasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
-  fwrite(&spellcharging, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
-  fwrite(&monstercasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
-  fwrite(&spareboolean, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  fread(&spellcasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  fread(&spellcharging, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  fread(&monstercasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  fread(&spareboolean, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
 
   fclose(fp);
 

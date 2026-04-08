@@ -43,11 +43,11 @@
 
 //================================= FUNCTIONS ===================================
 
-extern pascal void fade_to_black(long numSteps, short fadeFlags, Boolean fadeOut);
+extern pascal void fade_to_black(int32_t numSteps, short fadeFlags, Boolean fadeOut);
 
-extern pascal void fade_to_clut(long numSteps, CTabHandle destTab, GDHandle aGDevice);
+extern pascal void fade_to_clut(int32_t numSteps, CTabHandle destTab, GDHandle aGDevice);
 
-extern pascal void fade_to_color(long numSteps, RGBColor* destColor, GDHandle aGDevice);
+extern pascal void fade_to_color(int32_t numSteps, RGBColor* destColor, GDHandle aGDevice);
 
 extern pascal void copy_gdevice_clut(GDHandle aGDevice, CTabHandle* copyOfClut);
 

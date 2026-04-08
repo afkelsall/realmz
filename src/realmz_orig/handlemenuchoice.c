@@ -102,7 +102,7 @@ short DoQuitRealmz(void) {
 short HandleMenuChoice(void) {
   CCrsrHandle edit;
   FILE* fp = NULL;
-  long noteid;
+  int32_t noteid;
   short notenum, orignoteid, temp, accNumber, tempdx, tempdy, priorindex;
   short temppartyx, temppartyy, templevel, tempdunglevel, tempdung, tempx, tempy;
   Rect mainrect;

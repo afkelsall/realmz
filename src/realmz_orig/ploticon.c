@@ -66,6 +66,8 @@ void ploticon(short tempid, short showcurse) {
 
     idStr = getselection(item.itemid) + lg; // Myriad, the old is **not** legal
     GetIndString(myString, idStr, item.itemid - tempselection + 1);
+    if (lg && myString[0] == 0)
+      GetIndString(myString, idStr - 1, item.itemid - tempselection + 1);
 
     if (item.iscurse) {
       temp = getselection(item.iscurse); // Fantasoft 7.1

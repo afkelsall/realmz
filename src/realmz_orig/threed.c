@@ -2,14 +2,14 @@
 #include "variables.h"
 
 /************************** threed *********************/
-void threed(long id, short gox, short goy, short dir) {
-  long checktime;
+void threed(int32_t id, short gox, short goy, short dir) {
+  int32_t checktime;
   short cursor, oldcursor, wall, cancelkey, a, reply = FALSE;
   Boolean forward, skiptime = TRUE;
   WindowPtr whichWindow;
   Boolean bringbacktag, goodkey;
 
-  static long x, y;
+  static int32_t x, y;
   static short deltax = 0;
   static short deltay = 0;
 
@@ -712,9 +712,9 @@ void Render(void) {
 }
 
 /******************* updatewalls ****************************/
-void updatewalls(long x, long y) {
+void updatewalls(int32_t x, int32_t y) {
   Rect testRect, dest;
-  long t, tt;
+  int32_t t, tt;
 
   if (Rand(100) < 10) {
     if ((!doreg3()) && (currentscenario > 10))

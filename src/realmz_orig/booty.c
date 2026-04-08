@@ -55,7 +55,7 @@ void booty(short mode) {
   RGBColor tempcolor;
   char special[255];
   float tempshare;
-  long shareamount, dividers;
+  int32_t shareamount, dividers;
   ControlHandle one, two, three, four, five, six;
   ControlHandle identhan[6];
   short listindex, element, numtreasure, itemid, t, tt, baseexp, inc, oldinc, a, tempidflag;

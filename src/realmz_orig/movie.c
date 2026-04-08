@@ -4,8 +4,8 @@
 /************************ movie ************************/
 void movie(short textID, short dataid, short justify) // � 'About...' dialog box.
 {
-  long mouseuptime = 0;
-  long newcount;
+  int32_t mouseuptime = 0;
+  int32_t newcount;
   TEHandle textHand;
   Rect txtRect = lookrect;
   WindowRef about; // � Pointer to dialog.

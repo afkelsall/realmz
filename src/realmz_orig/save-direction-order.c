@@ -8,7 +8,7 @@ void save(short mode) {
   short choice, count, t = 0;
   short temp;
   char hold[80];
-  long testlocation;
+  int32_t testlocation;
   short n;
 
   t = CountResources('RLMZ') - 1;
@@ -530,7 +530,7 @@ pushon:
 }
 
 /****************************** saveland ****************************/
-void saveland(long id) {
+void saveland(int32_t id) {
   FILE* fp = NULL;
   if (id > 20)
     scratch2(8);

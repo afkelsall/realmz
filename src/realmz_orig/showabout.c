@@ -4,8 +4,8 @@
 
 /*************************** regdiv **************************/
 short regdiv(void) {
-  long noteid = 0;
-  long firsttime, secondtime, regcode = 0;
+  int32_t noteid = 0;
+  int32_t firsttime, secondtime, regcode = 0;
   short primer1, primer2, primer3;
   short toolong = 180;
   DialogRef screen;
@@ -112,7 +112,7 @@ void aboutrealmz(void) {
   GrafPtr oldport;
   char myCString[255];
   short toolong = 180;
-  long firsttime, secondtime, noteid = 0;
+  int32_t firsttime, secondtime, noteid = 0;
   short verifycode = 0;
   short randomcon[9] = {738, 752, 724, 741, 755, 790, 718, 713, 731};
   char str[255];

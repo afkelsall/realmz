@@ -81,7 +81,7 @@ void warp(void) {
   WindowPtr oldptr;
   FILE *fp, *op, *fp2, *fp3;
   short tempx, tempy;
-  long templong2;
+  int32_t templong2;
   Rect temprect;
   Boolean setday = 0;
 

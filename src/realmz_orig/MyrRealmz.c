@@ -300,7 +300,7 @@ void MyrCDiStr(short theItem, Str255 thestring) {
 
 /****************************** MyrNumToString ********************************/
 // Myriad : Convert a long value to a Cstring
-void MyrNumToString(long value, Str255 thestring) {
+void MyrNumToString(int32_t value, Str255 thestring) {
   NumToString(value, thestring);
   PtoCstr(thestring);
   return;

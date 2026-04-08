@@ -2,7 +2,7 @@
 #include "variables.h"
 
 /****************************** loadland ****************************/
-void loadland(long id, short mode) {
+void loadland(int32_t id, short mode) {
   short i;
 
   FILE* fp = NULL;

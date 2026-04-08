@@ -7,9 +7,9 @@ OSErr SetIndString(StringPtr theStr, short resID, short strIndex) {
   short numStrings; /* number of strings in STR# */
   short ourString; /* counter to index up to strIndex */
   char* resStr; /* string pointer to STR# string to replace */
-  long oldSize; /* size of STR# resource before call */
-  long newSize; /* size of STR# resource after call */
-  unsigned long offset; /* resource offset to str to replace*/
+  int32_t oldSize; /* size of STR# resource before call */
+  int32_t newSize; /* size of STR# resource after call */
+  uint32_t offset; /* resource offset to str to replace*/
 
   /* make sure resource exists */
 

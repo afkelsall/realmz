@@ -2,7 +2,7 @@
 #include "variables.h"
 
 /******************** age ***********************/
-short age(long age, short raceid, short currentagegroup) {
+short age(int32_t age, short raceid, short currentagegroup) {
   short nextyear, t;
   loadprofile(raceid, 0);
 

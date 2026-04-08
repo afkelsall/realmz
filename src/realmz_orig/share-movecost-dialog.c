@@ -42,7 +42,7 @@ void share(void) {
 
 /****************************** Rand ********************************/
 short Rand(short range) {
-  long rawResult;
+  int32_t rawResult;
 
   rawResult = Random();
   if (rawResult < 0)
@@ -51,7 +51,7 @@ short Rand(short range) {
 }
 
 /****************************** DialogNumLong ********************************/
-void DialogNumLong(short theItem, long theNum) {
+void DialogNumLong(short theItem, int32_t theNum) {
   GetDialogItem(gCurrent, theItem, &itemType, &itemHandle, &itemRect);
   MyrNumToString(theNum, myString);
   CtoPstr((Ptr)myString);

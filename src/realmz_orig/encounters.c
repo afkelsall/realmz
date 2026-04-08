@@ -346,7 +346,7 @@ over:
 short encounter2(void) {
   FILE* fp = NULL;
   DialogRef win;
-  long longvalue, longvalue2, longvalue3;
+  int32_t longvalue, longvalue2, longvalue3;
   short spell, t, knockchance, savedung, temp1, temp2;
   char reply, encsuccess, tag, goodword = TRUE;
   char word[256];

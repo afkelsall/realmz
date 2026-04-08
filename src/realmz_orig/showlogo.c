@@ -71,7 +71,7 @@ void showlogo(short howlong) {
 
 /************** delay2 ***********************/
 void delay2(short timedelay) {
-  long oldtick;
+  int32_t oldtick;
 
   if (!timedelay)
     timedelay = delayspeed;
