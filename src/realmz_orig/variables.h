@@ -178,7 +178,7 @@ extern ControlHandle departshop, poolshop, shareshop, castspellsbut, viewspellsb
 extern ControlHandle torch, showitems, search, attacks, condition, monsterbut, showitembut, showconditionbut;
 extern ControlHandle autoone[6];
 extern short cancamp, storeditems;
-extern Boolean spellcasting, spellcharging, monstercasting, spareboolean;
+extern Boolean spellcasting, spellcharging, monstercasting;
 extern char savedpostion[2], savedlandtype, savedlandlevel;
 extern short sparesavedgamevariables[4];
 extern DialogPtr gCurrent, gGeneration, dummy, background;
