@@ -465,7 +465,10 @@ void save(short mode) {
   fwrite(&spellcasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
   fwrite(&spellcharging, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
   fwrite(&monstercasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
-  fwrite(&spareboolean, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  // NOTE(fuzziqersoftware): This was previously `spareboolean`, which was unused and had the value 0 in all builds. We
+  // repurpose this field to store `storeditems`, which isn't the same size but is also semantically boolean.
+  Boolean storeditems_value = storeditems;
+  fwrite(&storeditems_value, sizeof(Boolean), 1, fp);
 
   fclose(fp);
 

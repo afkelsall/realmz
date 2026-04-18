@@ -306,7 +306,7 @@ char xydisplayflag = 0;
 char blanksavegamevariables[14]; //**** only 18 are left,  used two for templecost move.
 
 short cancamp, storeditems;
-Boolean spellcasting, spellcharging, monstercasting, spareboolean;
+Boolean spellcasting, spellcharging, monstercasting;
 
 short storageitems[180] = {0};
 int32_t myrmagic_storageitems = MYRMAGIC;

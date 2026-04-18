@@ -392,7 +392,11 @@ short load(void) {
   fread(&spellcasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
   fread(&spellcharging, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
   fread(&monstercasting, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
-  fread(&spareboolean, sizeof(Boolean), 1, fp); //*** fantasoft v7.1b  Added as was missing in previous version.
+  // NOTE(fuzziqersoftware): This was previously `spareboolean`, which was unused and had the value 0 in all builds. We
+  // repurpose this field to store `storeditems`, which isn't the same size but is also semantically boolean.
+  Boolean storeditems_value = FALSE;
+  fread(&storeditems_value, sizeof(Boolean), 1, fp);
+  storeditems = storeditems_value;
 
   fclose(fp);
 
