@@ -7,9 +7,10 @@
     "scale": 1.0,
 
     // "filter" controls how the image is scaled up to fill the window:
-    //   "auto"    - crisp at whole-number scales, smooth at fractional ones (default)
-    //   "nearest" - always crisp, with blocky pixels
-    //   "linear"  - always smooth, with softer edges
+    //   "auto"     - nearest at whole-number scales, pixelart at fractional ones (default)
+    //   "nearest"  - sharp pixels, but uneven widths at fractional scales
+    //   "pixelart" - sharp text and edges that stay even at fractional scales
+    //   "linear"   - fully smoothed; softens the bitmap UI text
     "filter": "auto"
   }
 }

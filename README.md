@@ -29,7 +29,7 @@ The game renders at its original 800x600 size, which can be small on a high reso
 }
 ```
 
-`scale` is a multiplier on the 800x600 window, so `2.0` produces a 1600x1200 window. Any value from `1.0` to `4.0` is allowed, including fractional values like `1.5`. `filter` controls how the image is scaled up: `auto` (the default) keeps the picture crisp at whole-number scales and smooths it at fractional ones, `nearest` is always crisp, and `linear` is always smooth. The file is optional; without it the game runs at 800x600 as before.
+`scale` is a multiplier on the 800x600 window, so `2.0` produces a 1600x1200 window. Any value from `1.0` to `4.0` is allowed, including fractional values like `1.5`. `filter` controls how the image is scaled up: `auto` (the default) uses sharp pixels at whole-number scales and a pixel-art filter at fractional ones to keep the text crisp; `nearest` is always sharp but can look uneven at fractional scales; `pixelart` stays sharp and even at any scale; and `linear` fully smooths the image, which softens the bitmap UI text. The file is optional; without it the game runs at 800x600 as before.
 
 # Reporting Bugs
 

@@ -51,21 +51,27 @@ RealmzSettings load_realmz_settings() {
       settings.scale_mode = SDL_SCALEMODE_NEAREST;
     } else if (filter == "linear") {
       settings.scale_mode = SDL_SCALEMODE_LINEAR;
+    } else if (filter == "pixelart") {
+      settings.scale_mode = SDL_SCALEMODE_PIXELART;
     } else {
       if (filter != "auto") {
         settings_log.warning_f("Unknown filter '{}'; using auto", filter);
       }
-      // auto: nearest for whole-number scales keeps the pixel art crisp;
-      // fractional scales use linear to avoid unevenly sized pixels.
+      // auto: whole-number scales are pixel-perfect with nearest. Fractional
+      // scales use the pixel-art mode, which keeps the bitmap fonts crisp while
+      // scaling cleanly; plain linear blurs them and plain nearest makes the
+      // pixels unevenly sized.
       bool is_integer_scale = (settings.scale == std::floor(settings.scale));
-      settings.scale_mode = is_integer_scale ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR;
+      settings.scale_mode = is_integer_scale ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_PIXELART;
     }
   } catch (const std::exception& e) {
     settings_log.warning_f("Could not parse {} ({}); using default window settings", path, e.what());
     return RealmzSettings{};
   }
 
-  settings_log.info_f("Window scale {}x, filter {}", settings.scale,
-      (settings.scale_mode == SDL_SCALEMODE_NEAREST) ? "nearest" : "linear");
+  const char* mode_name = (settings.scale_mode == SDL_SCALEMODE_NEAREST) ? "nearest"
+      : (settings.scale_mode == SDL_SCALEMODE_LINEAR)                    ? "linear"
+                                                                        : "pixelart";
+  settings_log.info_f("Window scale {}x, filter {}", settings.scale, mode_name);
   return settings;
 }
