@@ -111,6 +111,54 @@ HWND get_window_handle(SDL_Window* sdl_window) {
       NULL));
 }
 
+// Classic Mac marks a menu item as the parent of a hierarchical submenu by setting its command
+// char (key_equivalent here) to 0x1B; the mark_character then holds the submenu's menu id.
+// Macintosh Toolbox Essentials (3-96).
+static constexpr char hMenuCmd = 0x1B;
+
+// Builds the Windows drop-down/submenu for a Realmz menu, recursing into any hierarchical
+// submenus (such as Volume and Speed) referenced via the 0x1B/mark_character marker.
+static HMENU BuildMenu(const std::shared_ptr<WinMenu>& menu, const WinMenuList& menu_list) {
+  HMENU win_submenu = CreateMenu();
+
+  uint16_t i = 1;
+  for (const auto& submenu_item : menu->items) {
+    UINT enabled_state = submenu_item.enabled ? MFS_ENABLED : MFS_DISABLED;
+    UINT checked_state = submenu_item.checked ? MFS_CHECKED : MFS_UNCHECKED;
+
+    bool is_hierarchical = (submenu_item.key_equivalent == hMenuCmd) && submenu_item.mark_character;
+
+    std::string name = submenu_item.name;
+    if (submenu_item.key_equivalent && !is_hierarchical) {
+      name += std::format("\tCtrl+{:c}", toupper(submenu_item.key_equivalent));
+    }
+
+    MENUITEMINFO submenu_info = MENUITEMINFO{
+        .cbSize = sizeof(MENUITEMINFO),
+        .fMask = MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_STRING,
+        .fType = MFT_STRING,
+        .fState = enabled_state | checked_state,
+        .wID = PackMenuIdentifier(menu->menu_id, i),
+        .dwTypeData = const_cast<char*>(name.c_str()),
+        .cch = static_cast<UINT>(name.length())};
+
+    // Attach the referenced submenu, if this item is a hierarchical-menu parent.
+    if (is_hierarchical) {
+      for (const auto& sub : menu_list.submenus) {
+        if (sub->menu_id == static_cast<uint8_t>(submenu_item.mark_character)) {
+          submenu_info.fMask |= MIIM_SUBMENU;
+          submenu_info.hSubMenu = BuildMenu(sub, menu_list);
+          break;
+        }
+      }
+    }
+
+    InsertMenuItem(win_submenu, i++, TRUE, &submenu_info);
+  }
+
+  return win_submenu;
+}
+
 void WinMenuSync(SDL_Window* sdl_window, std::shared_ptr<WinMenuList> menu_list, void (*callback)(int16_t, int16_t)) {
   // Update current menu click callback function
   menuCallback = callback;
@@ -126,30 +174,8 @@ void WinMenuSync(SDL_Window* sdl_window, std::shared_ptr<WinMenuList> menu_list,
       .fMask = MIM_APPLYTOSUBMENUS | MIM_STYLE};
   SetMenuInfo(win_menu, &win_menu_info);
 
-  uint16_t i;
   for (auto menu : menu_list->menus) {
-    auto submenu = CreateMenu();
-
-    i = 1;
-    for (const auto& submenu_item : menu->items) {
-      UINT enabled_state = submenu_item.enabled ? MFS_ENABLED : MFS_DISABLED;
-      UINT checked_state = submenu_item.checked ? MFS_CHECKED : MFS_UNCHECKED;
-
-      std::string name = submenu_item.name;
-      if (submenu_item.key_equivalent) {
-        name += std::format("\tCtrl+{:c}", toupper(submenu_item.key_equivalent));
-      }
-      MENUITEMINFO submenu_info = MENUITEMINFO{
-          .cbSize = sizeof(MENUITEMINFO),
-          .fMask = MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_STRING,
-          .fType = MFT_STRING,
-          .fState = enabled_state | checked_state,
-          .wID = PackMenuIdentifier(menu->menu_id, i),
-          .dwTypeData = const_cast<char*>(name.c_str()),
-          .cch = static_cast<UINT>(name.length())};
-
-      InsertMenuItem(submenu, i++, TRUE, &submenu_info);
-    }
+    auto submenu = BuildMenu(menu, *menu_list);
 
     MENUITEMINFO item_info = MENUITEMINFO{
         .cbSize = sizeof(MENUITEMINFO),

@@ -35,10 +35,19 @@ void MCSync(std::shared_ptr<MenuList> menuList, void (*callback)(int16_t, int16_
 
   auto win_menu_list = std::make_shared<WinMenuList>();
 
-  auto menus = std::transform(
+  std::transform(
       menuList->menus.begin(),
       menuList->menus.end(),
       std::back_inserter(win_menu_list->menus),
+      win_menu_from_menu);
+
+  // Hierarchical menus (e.g. the Volume and Speed submenus) live in submenus and are
+  // referenced from a parent item via the 0x1B/mark_character marker. They must be carried
+  // across so WinMenuSync can attach them; otherwise those menus appear inert.
+  std::transform(
+      menuList->submenus.begin(),
+      menuList->submenus.end(),
+      std::back_inserter(win_menu_list->submenus),
       win_menu_from_menu);
 
   WinMenuSync(sdl_window.get(), win_menu_list, callback);
