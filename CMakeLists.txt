@@ -386,6 +386,8 @@ if(APPLE)
     install(FILES ${DATA_RESOURCE_FILES} DESTINATION "Data Files")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/base/Realmz/Scenarios" DESTINATION ".")
     install(FILES ${CHARACTER_DATA_FILES} DESTINATION "Character Files")
+    # Default settings file, loaded from SDL_GetBasePath() (the Resources dir) at startup
+    install(FILES "${CMAKE_SOURCE_DIR}/settings.json" DESTINATION ".")
 
     # We dynamically link to the SDL* libraries (plus an asan lib that clang links against),
     # so we need to ensure that they get included in the bundle. MacOS supports rpaths, which
@@ -406,6 +408,8 @@ elseif(WIN32)
     install(FILES ${DATA_RESOURCE_FILES} DESTINATION "${CMAKE_INSTALL_BINDIR}/Data Files")
     install(DIRECTORY "base/Realmz/Scenarios" DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(FILES ${CHARACTER_DATA_FILES} DESTINATION "${CMAKE_INSTALL_BINDIR}/Character Files")
+    # Default settings file, loaded from SDL_GetBasePath() (next to the exe) at startup
+    install(FILES "${CMAKE_SOURCE_DIR}/settings.json" DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # CMake's RUNTIME_DEPENDENCIES argument to install should work to include necessary
     # runtime dlls alongside the Realmz executable, but unfortunately (as of 4.1.1) it does

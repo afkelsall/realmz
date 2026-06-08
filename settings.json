@@ -1,0 +1,15 @@
+// Realmz settings. Edit the values below and restart the game.
+{
+  "scaling": {
+    // "scale" is a size multiplier applied to the original 800x600 window.
+    // 1.0 keeps the original size, 2.0 makes the window 1600x1200, and so on.
+    // Any value from 1.0 to 4.0 is allowed, including fractional ones like 1.5.
+    "scale": 1.0,
+
+    // "filter" controls how the image is scaled up to fill the window:
+    //   "auto"    - crisp at whole-number scales, smooth at fractional ones (default)
+    //   "nearest" - always crisp, with blocky pixels
+    //   "linear"  - always smooth, with softer edges
+    "filter": "auto"
+  }
+}
