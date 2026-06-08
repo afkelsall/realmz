@@ -9,6 +9,7 @@
 
 #include "QuickDraw.hpp"
 #include "SDLHelpers.hpp"
+#include "Settings.hpp"
 
 class WindowManager;
 class Window;
@@ -99,6 +100,7 @@ private:
   std::shared_ptr<Window> top_window;
   std::shared_ptr<Window> bottom_window;
   sdl_window_shared sdl_window;
+  RealmzSettings settings;
   bool text_editing_active = false;
   bool recomposite_enabled = true;
 

@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_properties.h>
+#include <cmath>
 #include <memory>
 #include <stdexcept>
 
@@ -938,16 +939,29 @@ WindowManager::~WindowManager() = default;
 void WindowManager::create_sdl_window() {
   wm_log.debug_f("WindowManager::create_sdl_window()");
 
-  static constexpr size_t w = 800;
-  static constexpr size_t h = 600;
-  this->sdl_window = sdl_make_shared(SDL_CreateWindow("Realmz", w, h, 0));
+  // The game always renders into an 800x600 logical buffer. The settings file
+  // can scale the window up; SDL then scales the logical buffer to fill it, so
+  // no game-side coordinates need to change.
+  static constexpr int logical_w = 800;
+  static constexpr int logical_h = 600;
+
+  this->settings = load_realmz_settings();
+  int window_w = std::lround(logical_w * this->settings.scale);
+  int window_h = std::lround(logical_h * this->settings.scale);
+
+  this->sdl_window = sdl_make_shared(SDL_CreateWindow("Realmz", window_w, window_h, 0));
   if (!this->sdl_window) {
     throw std::runtime_error(std::format("Could not create SDL window: {}", SDL_GetError()));
   }
-  if (!SDL_CreateRenderer(this->sdl_window.get(), nullptr)) {
+  auto renderer = SDL_CreateRenderer(this->sdl_window.get(), nullptr);
+  if (!renderer) {
     throw std::runtime_error(std::format("Could not create window renderer: {}", SDL_GetError()));
   }
-  this->screen_port.resize(w, h);
+  // Present in 800x600 logical coordinates regardless of the window size. The
+  // multiplier scales both axes equally so the 4:3 aspect ratio is preserved.
+  SDL_SetRenderLogicalPresentation(renderer, logical_w, logical_h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+
+  this->screen_port.resize(logical_w, logical_h);
   this->recomposite_all();
 }
 
@@ -1187,6 +1201,8 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
         if (!texture) {
           wm_log.error_f("Could not create texture: {}", SDL_GetError());
         } else {
+          SDL_SetTextureScaleMode(texture.get(), this->settings.scale_mode);
+          SDL_RenderClear(renderer);
           SDL_RenderTexture(renderer, texture.get(), nullptr, nullptr);
         }
       }

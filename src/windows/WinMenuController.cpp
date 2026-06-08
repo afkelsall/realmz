@@ -120,6 +120,13 @@ void WinMenuSync(SDL_Window* sdl_window, std::shared_ptr<WinMenuList> menu_list,
 
   auto wind_handle = get_window_handle(sdl_window);
 
+  // Capture the current content size before touching the menu. Adding the menu
+  // bar shrinks the client area without SDL knowing, so we restore this size
+  // afterwards. On the first sync this is the size the window was created at
+  // (the configured scale); on later syncs it is the size restored previously.
+  int client_w, client_h;
+  SDL_GetWindowSize(sdl_window, &client_w, &client_h);
+
   HMENU win_menu = CreateMenu();
   MENUINFO win_menu_info = MENUINFO{
       .cbSize = sizeof(MENUINFO),
@@ -182,8 +189,8 @@ void WinMenuSync(SDL_Window* sdl_window, std::shared_ptr<WinMenuList> menu_list,
   // bypass SDL to create the menu directly via the Windows API, it seems that SDL doesn't know that
   // the rendering of the menu bar has shrunk the client area. So, a quick call to SDL_SetWindowSize is
   // enough to force SDL to realize the menu bar now exists and to expand the window to ensure that the
-  // client area is the full 800x600.
-  SDL_SetWindowSize(sdl_window, 800, 600);
+  // client area is the full size captured above.
+  SDL_SetWindowSize(sdl_window, client_w, client_h);
 }
 
 int WinCreatePopupMenu(SDL_Window* sdl_window, std::shared_ptr<WinMenu> menu) {

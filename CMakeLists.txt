@@ -227,6 +227,7 @@ set(SOURCES
     src/QuickDraw.cpp
     src/ResourceManager.cpp
     src/SDLHelpers.cpp
+    src/Settings.cpp
     src/SoundManager.cpp
     src/WindowManager.cpp
 )

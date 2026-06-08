@@ -1,3 +1,7 @@
+## Unreleased
+
+- Add configurable window scaling via a `settings.json` file next to the executable
+
 ## [v8.1.0-beta2](https://github.com/Realmz-Castle/realmz/releases/tag/v8.1.0-beta2)
 
 - Add CMake presets for macOS by @jpetrie in #167

@@ -16,6 +16,21 @@ On Mac, double click the `.dmg` file you downloaded, then click and drag the Rea
 
 On Windows, you can either use the installer wizard for automatic installation, or a ZIP archive for custom installations. To use the installer, double click the `.exe` you downloaded. Accept the license agreement, choose an install location for Realmz, and continue through the "components" section of the installer.
 
+# Settings
+
+The game renders at its original 800x600 size, which can be small on a high resolution display. To make the window larger, create a file named `settings.json` next to the Realmz executable (the same folder as `Realmz.exe` on Windows, or inside the application bundle on Mac):
+
+```json
+{
+  "scaling": {
+    "scale": 2.0,
+    "filter": "auto"
+  }
+}
+```
+
+`scale` is a multiplier on the 800x600 window, so `2.0` produces a 1600x1200 window. Any value from `1.0` to `4.0` is allowed, including fractional values like `1.5`. `filter` controls how the image is scaled up: `auto` (the default) keeps the picture crisp at whole-number scales and smooths it at fractional ones, `nearest` is always crisp, and `linear` is always smooth. The file is optional; without it the game runs at 800x600 as before.
+
 # Reporting Bugs
 
 - Save the crash report file (if possible)
