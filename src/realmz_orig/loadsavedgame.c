@@ -118,11 +118,20 @@ short load(void) {
   fseek(fp, 0, SEEK_END);
   size_t file_size = ftell(fp);
   fseek(fp, 0, SEEK_SET);
+  // The original retail builds wrote `cancamp` as an array of 10 shorts (20 bytes) even though it is a single short.
+  // This was a buffer overflow, but it is part of the on-disk format: those saves are 18 bytes larger than the ones
+  // this port writes by default. Detect that variant by file size so retail Mac/PC saves load correctly.
   int use_extended_long_format;
-  if (file_size == 0x3979) { // Original build format, or modern Realmz Classic format
+  int use_original_cancamp;
+  if (file_size == 0x3979) { // Modern Realmz Classic format (cancamp as a single short)
     use_extended_long_format = 0;
+    use_original_cancamp = 0;
+  } else if (file_size == 0x398B) { // Original retail format (cancamp as 10 shorts)
+    use_extended_long_format = 0;
+    use_original_cancamp = 1;
   } else if (file_size == 0x398D) {
     use_extended_long_format = 1;
+    use_original_cancamp = 0;
   } else {
     scratch2(7);
   }
@@ -358,11 +367,21 @@ short load(void) {
    * NOTE(danapplegate): This appears to have been a bug, possibly introduced by Myriad
    * as the comments speculate. cancamp is a scalar short variable, while these calls
    * seem to think it is an array of 10 shorts. This was causing buffer overflows.
+   *
+   * The original retail saves do store 10 shorts here (use_original_cancamp), so read them
+   * into a local buffer and keep only the first value to avoid the overflow.
    */
   // fread(&cancamp, sizeof cancamp, 10, fp);
   // CvtTabShortToPc(&cancamp, 10); // Myriad ????
-  fread(&cancamp, sizeof cancamp, 1, fp);
-  CvtTabShortToPc(&cancamp, 1); // Myriad ????
+  if (use_original_cancamp) {
+    short cancamparray[10];
+    fread(cancamparray, sizeof(short), 10, fp);
+    CvtShortToPc(&cancamparray[0]);
+    cancamp = cancamparray[0];
+  } else {
+    fread(&cancamp, sizeof cancamp, 1, fp);
+    CvtTabShortToPc(&cancamp, 1); // Myriad ????
+  }
   /* *** END CHANGES *** */
 
   fread(&storage, sizeof storage, 1, fp);

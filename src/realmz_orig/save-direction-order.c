@@ -439,13 +439,20 @@ void save(short mode) {
    * NOTE(danapplegate): This appears to have been a bug, possibly introduced by Myriad
    * as the comments speculate. cancamp is a scalar short variable, while these calls
    * seem to think it is an array of 10 shorts. This was causing buffer overflows.
+   *
+   * The original retail saves store 10 shorts here, so write the value plus zero padding
+   * out of a local buffer. This keeps our saves the same size as the originals and avoids
+   * the overflow of reading past the single cancamp variable.
    */
   // CvtTabShortToPc(&cancamp, 10); // Myriad ????
   // fwrite(&cancamp, sizeof cancamp, 10, fp);
   // CvtTabShortToPc(&cancamp, 10); // Myriad ????
-  CvtTabShortToPc(&cancamp, 1); // Myriad ????
-  fwrite(&cancamp, sizeof cancamp, 1, fp);
-  CvtTabShortToPc(&cancamp, 1); // Myriad ????
+  {
+    short cancamparray[10] = {0};
+    cancamparray[0] = cancamp;
+    CvtShortToPc(&cancamparray[0]);
+    fwrite(cancamparray, sizeof(short), 10, fp);
+  }
   /* *** END CHANGES *** */
 
   CvtTabItemToPc(&storage, 6);

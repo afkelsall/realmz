@@ -1,3 +1,7 @@
+## Unreleased
+
+- Load saved games created by the original retail Realmz. These store the cancamp field as 10 shorts, making them 18 bytes larger than the saves this port wrote, so they were previously rejected. The port now reads that format and writes it as well.
+
 ## [v8.1.0-beta2](https://github.com/Realmz-Castle/realmz/releases/tag/v8.1.0-beta2)
 
 - Add CMake presets for macOS by @jpetrie in #167
