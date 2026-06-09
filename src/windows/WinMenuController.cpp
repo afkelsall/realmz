@@ -124,9 +124,15 @@ static HMENU BuildMenu(const std::shared_ptr<WinMenu>& menu, const WinMenuList& 
   uint16_t i = 1;
   for (const auto& submenu_item : menu->items) {
     UINT enabled_state = submenu_item.enabled ? MFS_ENABLED : MFS_DISABLED;
-    UINT checked_state = submenu_item.checked ? MFS_CHECKED : MFS_UNCHECKED;
 
     bool is_hierarchical = (submenu_item.key_equivalent == hMenuCmd) && submenu_item.mark_character;
+
+    // A non-submenu item carries its mark in mark_character (set via SetItemMark): 19 is the
+    // diamond "selected" glyph, -41 a secondary state. Native Windows menus have no "mixed"
+    // state, so collapse every nonzero mark to a check. Submenu parents store the child menu id
+    // in mark_character, so key_equivalent == 0x1B guards against treating that as a mark.
+    bool marked = submenu_item.checked || (!is_hierarchical && submenu_item.mark_character != 0);
+    UINT checked_state = marked ? MFS_CHECKED : MFS_UNCHECKED;
 
     std::string name = submenu_item.name;
     if (submenu_item.key_equivalent && !is_hierarchical) {
