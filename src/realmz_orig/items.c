@@ -418,6 +418,9 @@ backup:
               gotegg = TRUE;
 
               MyrAppendMenu(copy, (Ptr) "The Packers Rock!");
+              /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+               * NOTE(chromancer): AppendMenu no longer syncs; sync before MenuSelect shows the bar. */
+              DrawMenuBar();
             }
             compactheap();
             menuChoice = MenuSelect(gTheEvent.where);

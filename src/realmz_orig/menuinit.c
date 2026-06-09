@@ -318,4 +318,7 @@ neednewfile:
       lastload = -1;
     }
   }
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * NOTE(chromancer): Sync once after sort is complete to prevent hangs. */
+  DrawMenuBar();
 }

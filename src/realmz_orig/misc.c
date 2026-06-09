@@ -1775,6 +1775,9 @@ void updatemapmenu(void) {
     CheckItem(prefer, 7, 1);
   else
     CheckItem(prefer, 7, 0);
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * NOTE(chromancer): per-item menu ops no longer sync. Sync once after batch. */
+  DrawMenuBar();
 }
 
 /****************************** Startlevel **********************************/

@@ -2395,8 +2395,10 @@ startover:
 
       case 29: /******* Give/Display Map *******/
         map[abs(id)] = TRUE;
-        updatemapmenu();
+        /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+         * NOTE(chromancer): set the mark before updatemapmenu so its sync flushes it too. */
         CheckItem(gScenario, abs(id) + 4, 1);
+        updatemapmenu();
         if (id > -1)
           flashmessage((StringPtr) "You gain a map, to view the map use Maps/Notes in the Menu.", 30, 355, 0, 30005);
         else

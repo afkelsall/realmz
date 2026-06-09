@@ -144,8 +144,12 @@ static NSImage* MCImageForCicn(int16_t cicnID) {
         id menuIdentifier = [[MCMenuItemIdentifier alloc] initWithRawIds:menu.menu_id itemId:itemId];
         [subMenuItem setRepresentedObject:menuIdentifier];
         subMenuItem.enabled = subMenuItemRes.enabled;
-        if (subMenuItemRes.checked) {
+        bool mark_is_submenu_link = (subMenuItemRes.key_equivalent == 0x1B);
+        char mark = mark_is_submenu_link ? 0 : subMenuItemRes.mark_character;
+        if (subMenuItemRes.checked || mark == 19) {
           subMenuItem.state = NSControlStateValueOn;
+        } else if (mark != 0) {
+          subMenuItem.state = NSControlStateValueMixed;
         }
         NSImage* icon = MCImageForCicn(subMenuItemRes.icon_id);
         if (icon != nil) {

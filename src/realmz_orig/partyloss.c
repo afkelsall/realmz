@@ -85,6 +85,9 @@ void partyloss(short mode) {
   cleartarget();
   for (t = 1; t < 20; t++)
     DisableItem(gScenario, t + 3);
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * NOTE(chromancer): per-item menu ops no longer sync; sync after this batch. */
+  DrawMenuBar();
 
   if (mode)
     return;
