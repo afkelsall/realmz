@@ -230,7 +230,7 @@ static NSImage* MCImageForCicn(int16_t cicnID) {
   }
 
   // In the Cocoa framework, the origin is the bottom left. The point p is passed to us as (top, left).
-  NSWindow* window = (NSWindow*)nsWindow;
+  NSWindow* window = (__bridge NSWindow*)nsWindow;
   NSView* view = window.contentView;
   NSSize size = view.frame.size;
   NSPoint loc = NSMakePoint(p.second, size.height - p.first);
