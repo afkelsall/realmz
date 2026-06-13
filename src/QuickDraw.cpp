@@ -1221,6 +1221,15 @@ void HideCursor(void) {
 }
 
 void ShowCursor(void) {
+  // On Classic Mac OS, ShowCursor never raises the cursor level above its
+  // visible state; a ShowCursor with the cursor already fully shown does
+  // nothing. The original game calls ShowCursor in many more places than
+  // HideCursor, so without this clamp the level drifts negative and a later
+  // HideCursor (for example, when dragging an item in the shop) becomes a
+  // no-op, leaving the cursor visible when it should be hidden.
+  if (cursor_hide_level == 0) {
+    return;
+  }
   cursor_hide_level--;
   if (cursor_hide_level == 0) {
     SDL_ShowCursor();
