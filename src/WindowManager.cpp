@@ -2034,13 +2034,21 @@ short TrackControl(ControlHandle handle, Point pt, ProcPtr action_proc) {
   }
 
   // Thumb (indicator): drag it live. The control value follows the cursor while
-  // the mouse is held, with the thumb drawn pushed in, and the caller redraws
-  // the list once the drag returns. (Without this the value never changed, so
-  // dragging the thumb did nothing.)
+  // the mouse is held, with the thumb drawn pushed in. If the caller supplies an
+  // action proc it is called each time the value changes so the caller can
+  // redraw its contents (for example the shop item list) live during the drag;
+  // otherwise the caller redraws once when the drag returns. (Without this the
+  // value never changed, so dragging the thumb did nothing.)
   if (initial_part == kControlIndicatorPart) {
     int slider_range = item->get_height() - 3 * item->get_width() + 1;
     int value_range = item->control->max - item->control->min;
     if (slider_range > 0 && value_range > 0) {
+      // A real action proc takes the control and the part being tracked. The
+      // -1 value is the Toolbox sentinel for "use the control's default proc",
+      // which we have nothing to do for, so treat it like none.
+      auto live_proc = reinterpret_cast<void (*)(ControlHandle, short)>(action_proc);
+      bool have_live_proc = (action_proc != nullptr) && (action_proc != reinterpret_cast<ProcPtr>(-1));
+
       // Start from the current thumb offset and move it by the cursor delta, so
       // the grab point stays under the cursor with no jump.
       int start_offset = item->get_slider_offset();
@@ -2054,6 +2062,9 @@ short TrackControl(ControlHandle handle, Point pt, ProcPtr action_proc) {
         if (new_value != item->control->value) {
           item->control->value = static_cast<int16_t>(new_value);
           render_window_for_item(item);
+          if (have_live_proc) {
+            live_proc(handle, kControlIndicatorPart);
+          }
         }
         SDL_Delay(15);
       }

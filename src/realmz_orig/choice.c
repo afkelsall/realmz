@@ -1,6 +1,19 @@
 #include "prototypes.h"
 #include "variables.h"
 
+/*********** live thumb-drag redraw ***********/
+/* TrackControl calls this each time the scroll value changes while the thumb is
+   being dragged, so the item list follows the thumb live instead of only
+   jumping to the final position when the mouse is released. It does the same
+   redraw the drag used to do once at the end. */
+static pascal void shoplivescroll(ControlHandle thecontrol, short part) {
+  (void) part;
+  theControl = thecontrol;
+  skip = TRUE;
+  Display(0);
+  skip = FALSE;
+}
+
 /***************************** choice *** shop buttons ********************/
 short choice(short key) {
   short t;
@@ -285,7 +298,7 @@ short choice(short key) {
 
   if (theControl == shopitemsvert) {
     if (thePart == kControlIndicatorPart) {
-      thePart = TrackControl(shopitemsvert, point, 0L);
+      thePart = TrackControl(shopitemsvert, point, (ProcPtr) shoplivescroll);
       skip = TRUE;
       Display(0);
       skip = FALSE;
@@ -297,7 +310,7 @@ short choice(short key) {
     }
   } else if (theControl == charitemsvert) {
     if (thePart == kControlIndicatorPart) {
-      thePart = TrackControl(charitemsvert, point, 0L);
+      thePart = TrackControl(charitemsvert, point, (ProcPtr) shoplivescroll);
       skip = TRUE;
       Display(0);
       skip = FALSE;
