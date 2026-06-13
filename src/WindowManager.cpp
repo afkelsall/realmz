@@ -523,32 +523,35 @@ public:
         // pixel. The pieces are painted with foreground fills (not erase_rect),
         // because the shop window installs a stone background pixel pattern
         // (BackPixPat) and erase_rect honors that pattern over the background
-        // color. The exact colors and bevel layout were sampled from the
-        // original 1994 build; see the layout notes inline.
+        // color. The bevel layout was taken from the original 1994 build. Color
+        // values are stored pre-gamma (Mac OS 9 internal framebuffer level) so
+        // they render correctly when 2.59 color correction is active; without
+        // correction they match the raw Mac OS 9 output rather than the
+        // SheepShaver-presented output.
         const RGBColor BLACK = {.red = 0x0000, .green = 0x0000, .blue = 0x0000};
-        const RGBColor TRK_FILL = {.red = 0xC0C0, .green = 0xC0C0, .blue = 0xC0C0};
-        const RGBColor TRK_S1 = {.red = 0x9696, .green = 0x9696, .blue = 0x9696}; // recessed shadow, darkest
-        const RGBColor TRK_S2 = {.red = 0xA5A5, .green = 0xA5A5, .blue = 0xA5A5};
-        const RGBColor TRK_H1 = {.red = 0xCDCD, .green = 0xCDCD, .blue = 0xCDCD};
-        const RGBColor TRK_H2 = {.red = 0xDADA, .green = 0xDADA, .blue = 0xDADA}; // recessed highlight, lightest
-        const RGBColor TH_HI = {.red = 0xF3F3, .green = 0xF3F3, .blue = 0xF3F3}; // thumb top-left highlight
-        const RGBColor TH_LT = {.red = 0xDADA, .green = 0xDADA, .blue = 0xFFFF}; // thumb light periwinkle
-        const RGBColor TH_MD = {.red = 0xB3B3, .green = 0xB3B3, .blue = 0xFFFF}; // thumb mid periwinkle
-        const RGBColor TH_SH = {.red = 0x8787, .green = 0x8787, .blue = 0xDADA}; // thumb bottom-right shadow
-        const RGBColor TH_GR = {.red = 0x5454, .green = 0x5454, .blue = 0xB3B3}; // thumb grip line
+        const RGBColor TRK_FILL = {.red = 0xA9A9, .green = 0xA9A9, .blue = 0xA9A9};
+        const RGBColor TRK_S1 = {.red = 0x7777, .green = 0x7777, .blue = 0x7777}; // recessed shadow, darkest
+        const RGBColor TRK_S2 = {.red = 0x8888, .green = 0x8888, .blue = 0x8888};
+        const RGBColor TRK_H1 = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA};
+        const RGBColor TRK_H2 = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xCCCC}; // recessed highlight, lightest
+        const RGBColor TH_HI = {.red = 0xEEEE, .green = 0xEEEE, .blue = 0xEEEE}; // thumb top-left highlight
+        const RGBColor TH_LT = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF}; // thumb light periwinkle
+        const RGBColor TH_MD = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF}; // thumb mid periwinkle
+        const RGBColor TH_SH = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC}; // thumb bottom-right shadow
+        const RGBColor TH_GR = {.red = 0x3434, .green = 0x3434, .blue = 0x9999}; // thumb grip line
         // Pressed thumb: the same ramp shifted one step darker while it is dragged.
-        const RGBColor TH_HI_P = {.red = 0xDADA, .green = 0xDADA, .blue = 0xFFFF};
-        const RGBColor TH_LT_P = {.red = 0xB3B3, .green = 0xB3B3, .blue = 0xFFFF};
-        const RGBColor TH_MD_P = {.red = 0x8787, .green = 0x8787, .blue = 0xDADA};
-        const RGBColor TH_SH_P = {.red = 0x5454, .green = 0x5454, .blue = 0xB3B3};
-        const RGBColor TH_GR_P = {.red = 0x0000, .green = 0x0000, .blue = 0x7777};
-        const RGBColor AR_FACE = {.red = 0xE7E7, .green = 0xE7E7, .blue = 0xE7E7};
+        const RGBColor TH_HI_P = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF};
+        const RGBColor TH_LT_P = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF};
+        const RGBColor TH_MD_P = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC};
+        const RGBColor TH_SH_P = {.red = 0x3434, .green = 0x3434, .blue = 0x9999};
+        const RGBColor TH_GR_P = {.red = 0x0000, .green = 0x0000, .blue = 0x5555};
+        const RGBColor AR_FACE = {.red = 0xDDDD, .green = 0xDDDD, .blue = 0xDDDD};
         const RGBColor AR_HI = {.red = 0xFFFF, .green = 0xFFFF, .blue = 0xFFFF}; // arrow top-left highlight
-        const RGBColor AR_SH = {.red = 0xCDCD, .green = 0xCDCD, .blue = 0xCDCD}; // arrow bottom-right shadow
+        const RGBColor AR_SH = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA}; // arrow bottom-right shadow
         // Pressed (pushed-in) arrow palette: darker face with the bevel inverted.
-        const RGBColor AR_FACE_P = {.red = 0x9696, .green = 0x9696, .blue = 0x9696};
-        const RGBColor AR_HI_P = {.red = 0x7777, .green = 0x7777, .blue = 0x7777}; // top-left, now dark
-        const RGBColor AR_SH_P = {.red = 0xB3B3, .green = 0xB3B3, .blue = 0xB3B3}; // bottom-right, now light
+        const RGBColor AR_FACE_P = {.red = 0x7777, .green = 0x7777, .blue = 0x7777};
+        const RGBColor AR_HI_P = {.red = 0x5555, .green = 0x5555, .blue = 0x5555}; // top-left, now dark
+        const RGBColor AR_SH_P = {.red = 0x9999, .green = 0x9999, .blue = 0x9999}; // bottom-right, now light
 
         // Single pixel, horizontal run [x0..x1], and vertical run [y0..y1].
         auto px = [&](int16_t x, int16_t y, const RGBColor& c) {
