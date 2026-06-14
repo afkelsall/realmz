@@ -1600,6 +1600,7 @@ backup:
                       temprect = icon;
                       InsetRect(&temprect, 10, 10);
 
+                      int enable_recomposite = WindowManager_SetEnableRecomposite(0);
                       PenMode(2);
                       FrameOval(&oldbox);
                       PenMode(0);
@@ -1619,10 +1620,12 @@ backup:
                         PenMode(0);
                         ForeColor(whiteColor);
                         FrameOval(&icon);
+                        WindowManager_RecompositeAlways();
                       }
                       PenMode(2);
                       FrameOval(&oldbox);
                       PenMode(0);
+                      WindowManager_SetEnableRecomposite(enable_recomposite);
                       sound(6002);
                     } else
                       warn(43);

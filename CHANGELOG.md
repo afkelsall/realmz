@@ -1,3 +1,7 @@
+## Unreleased
+
+- Speed up the item-keep animation on the post-fight treasure screen. The sparkle shown when you keep an item used to take about two seconds because every drawing call recomposited the whole screen. It now presents one frame at a time, so the effect plays quickly.
+
 ## [v8.1.0-beta2](https://github.com/Realmz-Castle/realmz/releases/tag/v8.1.0-beta2)
 
 - Add CMake presets for macOS by @jpetrie in #167
