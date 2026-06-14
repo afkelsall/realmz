@@ -530,19 +530,30 @@ not the pinned dep).
 ## Branch experiment plan (executed; results recorded)
 
 Prototyped on `render-perf-investigation` (based on `main`). The instrumentation
-and both experiments are opt-in via environment variables, so the default build
-is unchanged. Steps 1 to 3 are done; the Measurements section above has the
-numbers.
+is opt-in via `REALMZ_PERF`, so the default build is unaffected.
 
-1. Measure first. Done. Added per-present phase timing to `recomposite()`
-   (`REALMZ_PERF=1`). Captured Debug first, which was misleading, then Release.
-2. Experiment A (`REALMZ_NO_SYNCWINDOW=1`): done, no measurable effect. Shelved.
-3. Experiment B (`REALMZ_PERSISTENT_TEXTURE=1`): done, ~15 to 17 percent off the
-   present path. Recommend promoting to default and removing the recreation path.
-4. Experiment C (present coalescing, #9): not yet prototyped. Optional follow-up.
-5. Validate behavior: when B is promoted to default, confirm output is
-   pixel-identical. `ENABLE_RECOMPOSITE_DEBUG` dumps the composited buffer to
-   BMP, so a before/after diff of the same scene is a cheap regression check.
+1. Measure first. Done. Per-present phase timing in `recomposite()`. Captured
+   Debug first (misleading), then Release.
+2. Experiment A (`REALMZ_NO_SYNCWINDOW=1`): done, no measurable effect. Not
+   adopted; the toggle remains for re-testing.
+3. Experiment B (persistent streaming texture): done and **adopted as the
+   default present path**; the per-present surface/texture recreation and the
+   `REALMZ_PERSISTENT_TEXTURE` toggle are removed.
+4. Build default: the local `build-windows.sh` now defaults `BUILD_TYPE=Release`
+   (finding #0). This file is developer-local; the upstream equivalent is to make
+   distributed Windows builds Release.
+5. Draw-side instrumentation: added (`qd_perf`). Leaf QuickDraw primitives time
+   themselves; each per-present line now also reports `gap` (wall time since the
+   previous present), `draw` (accumulated primitive time), and `draws` (count).
+   This is the harness for the next capture round: profile the specific scenes
+   that still feel slow in Release (loot flourish, begin-adventure redraw) and
+   see whether the cost is in drawing, compositing, or outside the render path.
+6. Experiment C (present coalescing, #9): not yet prototyped. Optional follow-up,
+   informed by what the draw-side capture shows.
+
+Validation still pending: confirm output stays pixel-identical with the texture
+change. `ENABLE_RECOMPOSITE_DEBUG` dumps the composited buffer to BMP, so a
+before/after diff of the same scene is a cheap regression check.
 
 Methodology notes worth keeping: measure in Release, not Debug (Debug inflates
 the CPU composite about 13x and adds per-primitive stderr logging that slows the
