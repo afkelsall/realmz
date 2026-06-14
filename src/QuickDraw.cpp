@@ -78,6 +78,7 @@ CCGrafPort::CCGrafPort()
   this->bgColor = 0xFFFFFFFF;
   this->rgbFgColor = {0x0000, 0x0000, 0x0000};
   this->rgbBgColor = {0xFFFF, 0xFFFF, 0xFFFF};
+  this->clipRect = {-32767, -32767, 32767, 32767};
   all_ports.emplace(this);
   this->log.debug_f("Created");
 }
@@ -190,7 +191,20 @@ bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text
     // appears to be off by 1 or 2 pixels sometimes) but it will do for now. There aren't good metrics provided by
     // SDL_ttf for this (ascent/height don't match the actual amount we need to trim) so we have to do this instead.
     size_t y_offset = (img.get_height() > h) ? ((img.get_height() - h) / 2) : 0;
-    data.copy_from_with_blend(img, rect.left, rect.top, w, h, 0, y_offset);
+    // Clip the blit to the port's clip rectangle so glyphs (for example tall
+    // substitute fonts with descenders) can't paint outside the region the
+    // caller intends, which would otherwise leave artifacts that nothing erases.
+    Rect dst = this->clipped_to_port(Rect{
+        .top = rect.top,
+        .left = rect.left,
+        .bottom = static_cast<int16_t>(rect.top + h),
+        .right = static_cast<int16_t>(rect.left + w)});
+    if (dst.right <= dst.left || dst.bottom <= dst.top) {
+      return true;
+    }
+    size_t src_x = dst.left - rect.left;
+    size_t src_y = y_offset + (dst.top - rect.top);
+    data.copy_from_with_blend(img, dst.left, dst.top, dst.right - dst.left, dst.bottom - dst.top, src_x, src_y);
     return true;
   }
 }
@@ -198,7 +212,10 @@ bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text
 bool CCGrafPort::draw_text_bitmap(const ResourceDASM::BitmapFontRenderer& renderer, const std::string& text, const Rect& rect) {
   uint32_t color32 = rgba8888_for_rgb_color(this->rgbFgColor);
   std::string wrapped_text = renderer.wrap_text_to_pixel_width(text, rect.right - rect.left);
-  renderer.render_text(data, wrapped_text, rect.left, rect.top, rect.right, rect.bottom, color32);
+  // render_text treats the right/bottom arguments as clip bounds, so intersect
+  // them with the port's clip rectangle to keep glyphs inside the region.
+  Rect dst = this->clipped_to_port(rect);
+  renderer.render_text(data, wrapped_text, rect.left, rect.top, dst.right, dst.bottom, color32);
   return true;
 }
 
@@ -1060,6 +1077,16 @@ void ScrollRect(const Rect* r, int16_t dh, int16_t dv, RgnHandle updateRgn) {
       port->copy_from(*port, src_rect, dst_rect, 0);
     }
   }
+}
+
+void ClipRect(const Rect* r) {
+  auto& port = current_port();
+  port.log.debug_f("ClipRect({{x0={}, y0={}, x1={}, y1={}}})", r->left, r->top, r->right, r->bottom);
+  port.clipRect = *r;
+}
+
+void GetClipRect(Rect* r) {
+  *r = current_port().clipRect;
 }
 
 void EraseRect(const Rect* r) {

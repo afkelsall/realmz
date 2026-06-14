@@ -5,6 +5,7 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include <algorithm>
 #include <memory>
 #include <phosg/Image.hh>
 #include <phosg/Strings.hh>
@@ -19,6 +20,10 @@ public:
   phosg::PrefixedLogger log;
   phosg::ImageRGBA8888N data;
   bool is_window;
+  // Rectangular clip region, in the same coordinate space as the drawing calls.
+  // Classic QuickDraw clips drawing to the port's clipRgn; we only need the
+  // rectangular case, so we track a single rect here. Defaults to wide open.
+  Rect clipRect;
 
   static std::unordered_set<const CCGrafPort*> all_ports;
   static CCGrafPort* as_port(void* ptr); // Returns null if ptr is not a CCGrafPort
@@ -45,6 +50,16 @@ public:
     return Point{
         .v = static_cast<int16_t>(p.v - this->portRect.top),
         .h = static_cast<int16_t>(p.h - this->portRect.left),
+    };
+  }
+
+  // Intersects the given rect with the current clip rectangle.
+  inline Rect clipped_to_port(const Rect& r) const {
+    return Rect{
+        .top = std::max(r.top, this->clipRect.top),
+        .left = std::max(r.left, this->clipRect.left),
+        .bottom = std::min(r.bottom, this->clipRect.bottom),
+        .right = std::min(r.right, this->clipRect.right),
     };
   }
 

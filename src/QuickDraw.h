@@ -196,6 +196,11 @@ void ScrollRect(const Rect* r, int16_t dh, int16_t dv, RgnHandle updateRgn);
 void EraseRect(const Rect* r);
 void PaintRect(const Rect* r);
 void FrameRect(const Rect* r);
+
+// Constrains subsequent drawing in the current port to the given rectangle.
+// GetClipRect reads back the current clip so callers can save and restore it.
+void ClipRect(const Rect* r);
+void GetClipRect(Rect* r);
 Boolean SectRect(const Rect* src1, const Rect* src2, Rect* dstRect);
 int32_t DeltaPoint(Point ptA, Point ptB);
 void GlobalToLocal(Point* pt);
