@@ -99,6 +99,10 @@ private:
   std::shared_ptr<Window> top_window;
   std::shared_ptr<Window> bottom_window;
   sdl_window_shared sdl_window;
+  // Reused across presents; declared after sdl_window so it is destroyed first.
+  sdl_texture_ptr screen_texture;
+  int screen_texture_w = 0;
+  int screen_texture_h = 0;
   bool text_editing_active = false;
   bool recomposite_enabled = true;
 

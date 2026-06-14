@@ -1172,23 +1172,25 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
       wm_log.error_f("Could not get window renderer: {}", SDL_GetError());
     } else {
 
-      auto w = this->screen_port.data.get_width();
-      auto h = this->screen_port.data.get_height();
+      int w = static_cast<int>(this->screen_port.data.get_width());
+      int h = static_cast<int>(this->screen_port.data.get_height());
       if (ENABLE_RECOMPOSITE_DEBUG) {
         wm_log.info_f("Writing debug{}.bmp", debug_number);
         phosg::save_file(std::format("debug{}.bmp", debug_number++), this->screen_port.data.serialize(phosg::ImageFormat::WINDOWS_BITMAP));
       }
-      auto surface = sdl_make_unique(SDL_CreateSurfaceFrom(
-          w, h, SDL_PIXELFORMAT_RGBA8888, this->screen_port.data.get_data(), 4 * this->screen_port.data.get_width()));
-      if (!surface) {
-        wm_log.error_f("Could not create surface: {}", SDL_GetError());
+      // Reuse one streaming texture across frames instead of creating a new
+      // surface and texture every present.
+      if (!this->screen_texture || this->screen_texture_w != w || this->screen_texture_h != h) {
+        this->screen_texture = sdl_make_unique(SDL_CreateTexture(
+            renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w, h));
+        this->screen_texture_w = w;
+        this->screen_texture_h = h;
+      }
+      if (!this->screen_texture) {
+        wm_log.error_f("Could not create texture: {}", SDL_GetError());
       } else {
-        auto texture = sdl_make_unique(SDL_CreateTextureFromSurface(renderer, surface.get()));
-        if (!texture) {
-          wm_log.error_f("Could not create texture: {}", SDL_GetError());
-        } else {
-          SDL_RenderTexture(renderer, texture.get(), nullptr, nullptr);
-        }
+        SDL_UpdateTexture(this->screen_texture.get(), nullptr, this->screen_port.data.get_data(), 4 * w);
+        SDL_RenderTexture(renderer, this->screen_texture.get(), nullptr, nullptr);
       }
 
       SDL_RenderPresent(renderer);
