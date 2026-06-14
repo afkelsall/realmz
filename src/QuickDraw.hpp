@@ -88,6 +88,26 @@ protected:
 
 CCGrafPort& get_default_port();
 
+// Opt-in (REALMZ_PERF=1) draw-side performance accounting. Drawing primitives
+// time themselves with a ScopedDraw and accumulate into a running total; the
+// compositor reads and resets that total once per present (see recomposite) so
+// frame time can be attributed to drawing versus compositing and presenting.
+// All of this is inert unless REALMZ_PERF is set.
+namespace qd_perf {
+bool enabled();
+void account(uint64_t perf_counter_ticks);
+struct DrawSince {
+  double ms;
+  uint64_t calls;
+};
+DrawSince take_and_reset();
+struct ScopedDraw {
+  uint64_t start;
+  ScopedDraw();
+  ~ScopedDraw();
+};
+} // namespace qd_perf
+
 Rect rect_from_reader(phosg::StringReader& data);
 
 inline uint32_t rgba8888_for_rgb_color(const RGBColor& color) {

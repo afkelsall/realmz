@@ -2,7 +2,9 @@
 
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -31,6 +33,40 @@
 #include "WindowManager.hpp"
 
 static phosg::PrefixedLogger qd_log("[QuickDraw] ", DEFAULT_LOG_LEVEL);
+
+// Draw-side performance accounting (opt-in via REALMZ_PERF=1; see QuickDraw.hpp).
+// ScopedDraw is placed at the top of the leaf drawing primitives, so the time
+// they spend is summed into g_draw_ticks and reported per present by the
+// compositor. Inert (no timestamps taken) unless REALMZ_PERF is set.
+namespace qd_perf {
+static bool read_perf_env() {
+  const char* v = SDL_getenv("REALMZ_PERF");
+  return v && v[0] && v[0] != '0';
+}
+bool enabled() {
+  static const bool e = read_perf_env();
+  return e;
+}
+static uint64_t g_draw_ticks = 0;
+static uint64_t g_draw_calls = 0;
+void account(uint64_t ticks) {
+  g_draw_ticks += ticks;
+  g_draw_calls++;
+}
+DrawSince take_and_reset() {
+  static const double freq = static_cast<double>(SDL_GetPerformanceFrequency());
+  DrawSince r{static_cast<double>(g_draw_ticks) * 1000.0 / freq, g_draw_calls};
+  g_draw_ticks = 0;
+  g_draw_calls = 0;
+  return r;
+}
+ScopedDraw::ScopedDraw() : start(enabled() ? SDL_GetPerformanceCounter() : 0) {}
+ScopedDraw::~ScopedDraw() {
+  if (this->start) {
+    account(SDL_GetPerformanceCounter() - this->start);
+  }
+}
+} // namespace qd_perf
 
 ///////////////////////////////////////////////////////////////////////////////
 // CCGrafPort implementation
@@ -105,6 +141,7 @@ void CCGrafPort::resize(size_t w, size_t h) {
 }
 
 void CCGrafPort::erase_rect(const Rect& r) {
+  qd_perf::ScopedDraw _sd;
   if (this->bkPixPat) {
     this->draw_background_ppat(r);
   } else {
@@ -135,6 +172,7 @@ void CCGrafPort::draw_ga11_data(const void* pixels, int sw, int sh, const Rect& 
 }
 
 void CCGrafPort::draw_rgba8888_data(const void* pixels, int sw, int sh, const Rect& rect) {
+  qd_perf::ScopedDraw _sd;
   // It's OK to const_cast pixels here because we only use the image as a source
   auto src = phosg::ImageRGBA8888N::from_data_reference(const_cast<void*>(pixels), sw, sh);
   ssize_t dw = rect.right - rect.left;
@@ -203,6 +241,7 @@ bool CCGrafPort::draw_text_bitmap(const ResourceDASM::BitmapFontRenderer& render
 }
 
 bool CCGrafPort::draw_text(const std::string& text, const Rect& r) {
+  qd_perf::ScopedDraw _sd;
   std::string processed_text = replace_param_text(text);
   if (processed_text.empty()) {
     return true;
@@ -240,6 +279,7 @@ static std::pair<size_t, size_t> pixel_dimensions_for_text(TTF_Font* tt_font, co
 }
 
 void CCGrafPort::draw_text(const std::string& text) {
+  qd_perf::ScopedDraw _sd;
   std::string processed_text = replace_param_text(text);
 
   auto font = load_font(this->txFont);
@@ -294,6 +334,7 @@ void CCGrafPort::draw_text(const std::string& text) {
 }
 
 int CCGrafPort::measure_text(const std::string& text) {
+  qd_perf::ScopedDraw _sd;
   std::string processed_text = replace_param_text(text);
 
   auto font = load_font(this->txFont);
@@ -423,6 +464,7 @@ static phosg::ImageRGB888 reference_image_for_ppat(PixPatHandle ppat) {
 }
 
 void CCGrafPort::draw_oval(const Rect& r) {
+  qd_perf::ScopedDraw _sd;
   // TODO: We should respect the pen size here
   switch (this->pnMode) {
     case 0x00: { // srcCopy
@@ -453,6 +495,7 @@ void CCGrafPort::draw_oval(const Rect& r) {
 }
 
 void CCGrafPort::draw_line(const Point& start, const Point& end) {
+  qd_perf::ScopedDraw _sd;
   // TODO: We should respect the pen size here
   switch (this->pnMode) {
     case 0x00: // srcCopy
@@ -509,6 +552,7 @@ void CCGrafPort::draw_background_ppat(const Rect& rect) {
 }
 
 void CCGrafPort::copy_from(const CCGrafPort& src, const Rect& src_rect, const Rect& dst_rect, int16_t mode) {
+  qd_perf::ScopedDraw _sd;
   int src_w = src_rect.right - src_rect.left;
   int src_h = src_rect.bottom - src_rect.top;
   int dst_w = dst_rect.right - dst_rect.left;
