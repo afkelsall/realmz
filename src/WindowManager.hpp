@@ -99,6 +99,12 @@ private:
   std::shared_ptr<Window> top_window;
   std::shared_ptr<Window> bottom_window;
   sdl_window_shared sdl_window;
+  // Persistent streaming texture used by the present path when the
+  // REALMZ_PERSISTENT_TEXTURE experiment is enabled. Declared after sdl_window
+  // so it is destroyed before the window (and its renderer).
+  sdl_texture_ptr screen_texture;
+  int screen_texture_w = 0;
+  int screen_texture_h = 0;
   bool text_editing_active = false;
   bool recomposite_enabled = true;
 

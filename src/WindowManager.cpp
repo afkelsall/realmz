@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_properties.h>
+#include <cstdio>
 #include <memory>
 #include <stdexcept>
 
@@ -53,6 +54,33 @@ inline Rect copy_rect(const ResourceDASM::Rect& src) {
 // SDL and rendering helpers
 
 static phosg::PrefixedLogger wm_log("[WindowManager] ", DEFAULT_LOG_LEVEL);
+
+// Render-path performance experiments. All are opt-in via environment variables
+// so the default build behaves exactly as before. They let us measure the
+// present path and prototype two changes without committing to them:
+//   REALMZ_PERF=1               log per-present phase timings to stderr
+//   REALMZ_NO_SYNCWINDOW=1      experiment A: skip SDL_SyncWindow after present
+//   REALMZ_PERSISTENT_TEXTURE=1 experiment B: reuse one streaming texture
+static bool perf_env_flag(const char* name) {
+  const char* v = SDL_getenv(name);
+  return v && v[0] && v[0] != '0';
+}
+static bool perf_trace_enabled() {
+  static const bool enabled = perf_env_flag("REALMZ_PERF");
+  return enabled;
+}
+static bool perf_skip_syncwindow() {
+  static const bool enabled = perf_env_flag("REALMZ_NO_SYNCWINDOW");
+  return enabled;
+}
+static bool perf_use_persistent_texture() {
+  static const bool enabled = perf_env_flag("REALMZ_PERSISTENT_TEXTURE");
+  return enabled;
+}
+static double perf_ms(uint64_t start, uint64_t end) {
+  static const double freq = static_cast<double>(SDL_GetPerformanceFrequency());
+  return static_cast<double>(end - start) * 1000.0 / freq;
+}
 
 static size_t generate_opaque_handle() {
   static size_t next_handle = 1;
@@ -1127,15 +1155,21 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
     return;
   }
 
+  const bool perf = perf_trace_enabled();
+  const uint64_t t_start = perf ? SDL_GetPerformanceCounter() : 0;
+
   std::shared_ptr<Window> window;
-  if (!updated_window || enable_translucent_window_debug) {
+  const bool full_clear = (!updated_window || enable_translucent_window_debug);
+  if (full_clear) {
     this->screen_port.data.clear(0x000000FF);
     window = this->bottom_window;
   } else {
     window = updated_window;
   }
 
+  int composited_windows = 0;
   for (; window; window = window->window_above) {
+    composited_windows++;
     // Draw window border
     this->screen_port.data.draw_horizontal_line(window->port.portRect.left - 1, window->port.portRect.right, window->port.portRect.top - 1, 0, 0x000000FF);
     this->screen_port.data.draw_horizontal_line(window->port.portRect.left - 1, window->port.portRect.right, window->port.portRect.bottom, 0, 0x000000FF);
@@ -1166,6 +1200,8 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
     }
   }
 
+  const uint64_t t_composite = perf ? SDL_GetPerformanceCounter() : 0;
+
   if (this->sdl_window) {
     auto renderer = SDL_GetRenderer(this->sdl_window.get());
     if (!renderer) {
@@ -1178,21 +1214,78 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
         wm_log.info_f("Writing debug{}.bmp", debug_number);
         phosg::save_file(std::format("debug{}.bmp", debug_number++), this->screen_port.data.serialize(phosg::ImageFormat::WINDOWS_BITMAP));
       }
-      auto surface = sdl_make_unique(SDL_CreateSurfaceFrom(
-          w, h, SDL_PIXELFORMAT_RGBA8888, this->screen_port.data.get_data(), 4 * this->screen_port.data.get_width()));
-      if (!surface) {
-        wm_log.error_f("Could not create surface: {}", SDL_GetError());
-      } else {
-        auto texture = sdl_make_unique(SDL_CreateTextureFromSurface(renderer, surface.get()));
-        if (!texture) {
-          wm_log.error_f("Could not create texture: {}", SDL_GetError());
+
+      uint64_t t_upload = t_composite;
+      uint64_t t_render = t_composite;
+
+      if (perf_use_persistent_texture()) {
+        // Experiment B: keep one streaming texture and update it in place,
+        // instead of allocating a fresh surface and GPU texture every present.
+        if (!this->screen_texture ||
+            this->screen_texture_w != static_cast<int>(w) ||
+            this->screen_texture_h != static_cast<int>(h)) {
+          this->screen_texture = sdl_make_unique(SDL_CreateTexture(
+              renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+              static_cast<int>(w), static_cast<int>(h)));
+          this->screen_texture_w = static_cast<int>(w);
+          this->screen_texture_h = static_cast<int>(h);
+        }
+        if (!this->screen_texture) {
+          wm_log.error_f("Could not create streaming texture: {}", SDL_GetError());
         } else {
-          SDL_RenderTexture(renderer, texture.get(), nullptr, nullptr);
+          SDL_UpdateTexture(this->screen_texture.get(), nullptr, this->screen_port.data.get_data(), 4 * static_cast<int>(w));
+          t_upload = perf ? SDL_GetPerformanceCounter() : 0;
+          SDL_RenderTexture(renderer, this->screen_texture.get(), nullptr, nullptr);
+          t_render = perf ? SDL_GetPerformanceCounter() : 0;
+        }
+      } else {
+        // Default path: recreate the surface and texture each present.
+        auto surface = sdl_make_unique(SDL_CreateSurfaceFrom(
+            w, h, SDL_PIXELFORMAT_RGBA8888, this->screen_port.data.get_data(), 4 * this->screen_port.data.get_width()));
+        if (!surface) {
+          wm_log.error_f("Could not create surface: {}", SDL_GetError());
+        } else {
+          auto texture = sdl_make_unique(SDL_CreateTextureFromSurface(renderer, surface.get()));
+          t_upload = perf ? SDL_GetPerformanceCounter() : 0;
+          if (!texture) {
+            wm_log.error_f("Could not create texture: {}", SDL_GetError());
+            t_render = t_upload;
+          } else {
+            SDL_RenderTexture(renderer, texture.get(), nullptr, nullptr);
+            t_render = perf ? SDL_GetPerformanceCounter() : 0;
+          }
         }
       }
 
       SDL_RenderPresent(renderer);
-      SDL_SyncWindow(this->sdl_window.get());
+      const uint64_t t_present = perf ? SDL_GetPerformanceCounter() : 0;
+
+      // Experiment A: SDL_SyncWindow blocks until the window server has applied
+      // pending window state. There is none on a normal present, so skipping it
+      // here removes a potential per-frame stall. Resize handlers do not depend
+      // on it for correctness in this build.
+      if (!perf_skip_syncwindow()) {
+        SDL_SyncWindow(this->sdl_window.get());
+      }
+      const uint64_t t_sync = perf ? SDL_GetPerformanceCounter() : 0;
+
+      if (perf) {
+        static uint64_t present_index = 0;
+        const char* mode = perf_use_persistent_texture()
+            ? (perf_skip_syncwindow() ? "B+A" : "B")
+            : (perf_skip_syncwindow() ? "A" : "baseline");
+        fprintf(stderr,
+            "[perf] present #%llu mode=%s full=%d wins=%d size=%zux%zu | "
+            "composite=%.3f upload=%.3f render=%.3f present=%.3f sync=%.3f total=%.3f ms\n",
+            static_cast<unsigned long long>(present_index++), mode, full_clear ? 1 : 0,
+            composited_windows, static_cast<size_t>(w), static_cast<size_t>(h),
+            perf_ms(t_start, t_composite),
+            perf_ms(t_composite, t_upload),
+            perf_ms(t_upload, t_render),
+            perf_ms(t_render, t_present),
+            perf_ms(t_present, t_sync),
+            perf_ms(t_start, t_sync));
+      }
     }
   }
 }
