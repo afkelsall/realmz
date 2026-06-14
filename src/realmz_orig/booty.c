@@ -1588,7 +1588,11 @@ backup:
                       truejoin = FALSE;
 
                       movecalc(charselectnew);
-                      updatebooty(charselectnew);
+                      {
+                        int update_recomposite = WindowManager_SetEnableRecomposite(0);
+                        updatebooty(charselectnew);
+                        WindowManager_SetEnableRecomposite(update_recomposite);
+                      }
 
                     keeptaking:
 
@@ -1612,6 +1616,13 @@ backup:
                         FrameOval(&temprect);
                         PenMode(0);
                         FrameOval(&icon);
+                        // Present only every few frames, right after the coloured
+                        // oval is drawn and before it is erased by the white one
+                        // below. Recompositing is disabled for the loop, so this
+                        // shows the sparkle as a quick flourish (a handful of frames)
+                        // instead of a full screen recomposite and present per oval.
+                        if ((t % 3) == 0)
+                          WindowManager_RecompositeAlways();
                         PenMode(2);
                         tempcolor.red = 2 * Rand(32760);
                         tempcolor.blue = 2 * Rand(32760);
@@ -1620,11 +1631,74 @@ backup:
                         PenMode(0);
                         ForeColor(whiteColor);
                         FrameOval(&icon);
-                        WindowManager_RecompositeAlways();
                       }
                       PenMode(2);
                       FrameOval(&oldbox);
                       PenMode(0);
+
+                      // The sparkle erases itself with XOR ovals, which cancel
+                      // cleanly on the original Mac but not here (FrameOval is
+                      // antialiased), so they leave stray coloured pixels in the
+                      // cell. Repaint the emptied cell and its neighbours from the
+                      // item list to clear any leftovers before showing the result.
+                      {
+                        short bcols = 6 + (3 * screensize);
+                        short srow = downindex - bootyitemindex;
+                        short r0 = srow - 1, r1 = srow + 1, c0 = leftindex - 1, c1 = leftindex + 1;
+                        Rect clearrect;
+                        if (r0 < 0)
+                          r0 = 0;
+                        if (r1 > 6)
+                          r1 = 6;
+                        if (c0 < 0)
+                          c0 = 0;
+                        if (c1 > bcols - 1)
+                          c1 = bcols - 1;
+                        clearrect.left = c0 * 50 + 7;
+                        clearrect.right = (c1 + 1) * 50 + 7;
+                        clearrect.top = r0 * 60 + 10;
+                        clearrect.bottom = (r1 + 1) * 60 + 10;
+                        BackPixPat(whitepat);
+                        EraseRect(&clearrect);
+                        for (t = r0; t <= r1; t++) {
+                          for (tt = c0; tt <= c1; tt++) {
+                            temp = list[(bootyitemindex + t) * bcols + tt];
+                            if (temp) {
+                              loaditem(temp);
+                              iconhand = NIL;
+                              if ((didfum) && (((bootyitemindex + t) * bcols + tt) < didfum))
+                                iconhand = GetCIcon(lookupicon(item.iconid, TRUE));
+                              else
+                                iconhand = GetCIcon(lookupicon(item.iconid, idtoggle));
+                              if (temp < 0) {
+                                magicrect.top = t * 60 + 17;
+                                magicrect.left = tt * 50 + 8;
+                                magicrect.right = magicrect.left + 48;
+                                magicrect.bottom = magicrect.top + 48;
+                                if (showmagic)
+                                  PlotCIcon(&magicrect, showmagic);
+                              }
+                              icon.top = t * 60 + 25;
+                              icon.left = tt * 50 + 16;
+                              icon.right = icon.left + 32;
+                              icon.bottom = icon.top + 32;
+                              if (iconhand) {
+                                PlotCIcon(&icon, iconhand);
+                                DisposeCIcon(iconhand);
+                              }
+                            }
+                          }
+                        }
+                      }
+
+                      // The repaint above also wiped the XOR hover oval, but the
+                      // hover code still thinks it is drawn. Clear that state so it
+                      // does not later XOR a stray oval back onto this cell: leave
+                      // the oval rects empty and mark this cell as the current one.
+                      SetRect(&box, 0, 0, 0, 0);
+                      SetRect(&oldbox, 0, 0, 0, 0);
+                      oldinc = element;
+
                       WindowManager_SetEnableRecomposite(enable_recomposite);
                       sound(6002);
                     } else

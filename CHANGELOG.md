@@ -1,6 +1,6 @@
 ## Unreleased
 
-- Speed up the item-keep animation on the post-fight treasure screen. The sparkle shown when you keep an item used to take about two seconds because every drawing call recomposited the whole screen. It now presents one frame at a time, so the effect plays quickly.
+- Speed up keeping items on the post-fight treasure screen. Keeping an item used to take about two seconds, because the port repaints the whole screen on every drawing call and that stretched the brief item-grab sparkle into a long animation. The sparkle is now drawn off screen and shown over a handful of frames, so it plays as a quick flourish instead, and the emptied cell is repainted afterward so the sparkle no longer leaves stray pixels behind.
 - Stop the text blip from sounding when the cursor leaves the treasure area in the larger window layouts. The item preview drawn while hovering an item was clearing the flag that keeps that sound quiet during the treasure screen.
 
 ## [v8.1.0-beta2](https://github.com/Realmz-Castle/realmz/releases/tag/v8.1.0-beta2)
