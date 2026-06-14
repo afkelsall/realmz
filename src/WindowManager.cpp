@@ -1178,19 +1178,30 @@ void WindowManager::recomposite(std::shared_ptr<Window> updated_window) {
         wm_log.info_f("Writing debug{}.bmp", debug_number);
         phosg::save_file(std::format("debug{}.bmp", debug_number++), this->screen_port.data.serialize(phosg::ImageFormat::WINDOWS_BITMAP));
       }
-      // Reuse one streaming texture across frames instead of creating a new
-      // surface and texture every present.
-      if (!this->screen_texture || this->screen_texture_w != w || this->screen_texture_h != h) {
-        this->screen_texture = sdl_make_unique(SDL_CreateTexture(
-            renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w, h));
-        this->screen_texture_w = w;
-        this->screen_texture_h = h;
+      // Reuse one streaming texture instead of creating a new surface and
+      // texture every present; recreate it on size change or update failure.
+      auto ensure_texture = [&] {
+        if (!this->screen_texture || this->screen_texture_w != w || this->screen_texture_h != h) {
+          this->screen_texture = sdl_make_unique(SDL_CreateTexture(
+              renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w, h));
+          this->screen_texture_w = w;
+          this->screen_texture_h = h;
+        }
+      };
+      const void* pixels = this->screen_port.data.get_data();
+      ensure_texture();
+      bool updated = this->screen_texture && SDL_UpdateTexture(this->screen_texture.get(), nullptr, pixels, 4 * w);
+      if (!updated) {
+        // The texture can be invalidated, for example by a render device reset;
+        // drop it, recreate, and try once more.
+        this->screen_texture.reset();
+        ensure_texture();
+        updated = this->screen_texture && SDL_UpdateTexture(this->screen_texture.get(), nullptr, pixels, 4 * w);
       }
-      if (!this->screen_texture) {
-        wm_log.error_f("Could not create texture: {}", SDL_GetError());
-      } else {
-        SDL_UpdateTexture(this->screen_texture.get(), nullptr, this->screen_port.data.get_data(), 4 * w);
+      if (updated) {
         SDL_RenderTexture(renderer, this->screen_texture.get(), nullptr, nullptr);
+      } else {
+        wm_log.error_f("Could not update screen texture: {}", SDL_GetError());
       }
 
       SDL_RenderPresent(renderer);
