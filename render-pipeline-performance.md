@@ -58,7 +58,8 @@ animation frame pays the full chain above.
 
 | # | Issue | Impact | Difficulty |
 |---|-------|--------|------------|
-| 1 | New GPU texture allocated and full frame re-uploaded every recomposite | High | Low |
+| 0 | Distributed Windows builds are Debug (`-O0` plus per-primitive stderr logging) | High (measured) | Trivial |
+| 1 | New GPU texture allocated and full frame re-uploaded every recomposite | High -> Low (measured) | Low |
 | 2 | `SDL_SyncWindow` after every present | Med-High | Low |
 | 3 | Whole-screen CPU recomposite with no dirty-rect / no opaque fast path | High | Med-High |
 | 9 | Present welded to every recomposite (no coalescing across draws) | High | Medium |
@@ -71,7 +72,76 @@ animation frame pays the full chain above.
 Findings #1, #2, #3, and #9 are the present/compositing hot path the maintainer
 discussion is circling; they are detailed below along with a cross-check against
 that discussion and a branch experiment plan. #9 was added after reviewing the
-discussion.
+discussion. Finding #0 was added after measuring, and is now the headline.
+
+---
+
+## Measurements (Release vs Debug, instrumented present path)
+
+The `recomposite()` present path was instrumented (commit on
+`render-perf-investigation`, opt-in via `REALMZ_PERF=1`) and the same play
+sequence was captured on Windows in a Debug build and a Release build, plus the
+two experiment toggles. Numbers below are mean milliseconds per present over
+about 5000 presents per run. Each present time is the sum of its phases.
+
+Debug vs Release, baseline (the headline, finding #0):
+
+| phase | Debug mean | Release mean | speedup |
+|-------|-----------:|-------------:|--------:|
+| composite | 6.71 | 0.50 | ~13x |
+| upload (texture) | 0.62 | 0.62 | ~1x |
+| present | 0.36 | 0.41 | ~1x |
+| sync | 0.001 | 0.001 | - |
+| total | 7.71 | 1.53 | ~5x |
+
+The composite phase is pure CPU per-pixel work, so `-O0` was inflating it about
+13x; in Release it is half a millisecond. The user also confirmed by feel that
+the Release build "feels normal" where the Debug build felt slow. Since
+`build-windows.sh` defaults `BUILD_TYPE=Debug` and `rebuild-integration.sh` does
+not override it, the shared test releases people judge as slow are Debug builds
+(the shipped exe is ~41 MB, matching a Debug build; Release is ~28 MB). Building
+and distributing Release (or RelWithDebInfo) is the single highest-impact change
+here and is effectively one line.
+
+Experiment results in Release (mean ms/present; scene-controlled rows fix the
+window count so composite is comparable):
+
+| run | composite | upload | present | sync | total |
+|-----|----------:|-------:|--------:|-----:|------:|
+| baseline | 0.50 | 0.62 | 0.41 | 0.001 | 1.53 |
+| A (no SyncWindow) | 0.50 | 0.67 | 0.47 | 0.001 | 1.64 |
+| B (persistent texture) | 0.49 | 0.25 | 0.55 | 0.001 | 1.30 |
+| A+B | 0.52 | 0.26 | 0.58 | 0.001 | 1.36 |
+| baseline, 1 window | 0.38 | 0.61 | 0.37 | 0.001 | 1.36 |
+| B, 1 window | 0.37 | 0.25 | 0.51 | 0.001 | 1.13 |
+| baseline, 4 windows | 1.31 | 0.65 | 0.58 | 0.001 | 2.53 |
+| B, 4 windows | 1.23 | 0.24 | 0.58 | 0.001 | 2.11 |
+
+Conclusions:
+
+- Experiment A (drop `SDL_SyncWindow`): no measurable effect. `sync` is about
+  0.001 ms and `present` is about 0.4 ms (a vsync-locked present would be ~16
+  ms). This confirms empirically that there is no vsync stall, the maintainers'
+  "vsync locked present" belief is wrong on this setup. Do not pursue A as an
+  optimization; remove the call only for tidiness if at all.
+- Experiment B (persistent streaming texture): a consistent win. `upload` drops
+  from ~0.62 to ~0.25 ms and total present-path time falls about 15 to 17
+  percent across both light (1 window) and heavy (4 window) scenes. Some cost
+  shifts into `present` (streaming uploads flush at draw/present time), but the
+  net is clearly positive. Promote B to the default path and delete the
+  per-present surface/texture recreation. This is finding #1, now measured: the
+  fix is real but the absolute saving is sub-millisecond because the Debug build
+  was the real cost.
+- In Release the present path is not a bottleneck at all: mean ~1.5 ms, p99 ~4.3
+  ms, essentially 0 percent of presents over the 16.7 ms (60fps) budget. The
+  "composite dominates" picture from the first capture was a Debug artifact.
+
+Caveat on scope: this instrumentation times only `recomposite()` (composite plus
+present). It does not time the drawing primitives that run between recomposites
+(CopyBits, text, oval/line draws), nor game logic. If any animation still feels
+slow in a Release build, the next measurement should cover the draw side
+(findings #4, #6, #7, #8) and the number of presents per animation (finding #9),
+not the present path itself.
 
 ---
 
@@ -431,46 +501,46 @@ not the pinned dep).
 - Rendering is reactive, so there is no idle CPU spin; `SystemTask` sleeps in the
   game's busy loops (`src/EventManager.cpp:551-558`). No frame cap is needed.
 
-## Suggested order of work
+## Suggested order of work (revised after measuring)
 
-1. Finding #1 (persistent streaming texture) and #2 (drop per-present
-   `SDL_SyncWindow`) together. Both are Low difficulty and remove the biggest
-   per-frame costs; do them first and measure animation smoothness
-   (`cast.c`/`booty.c` spell and treasure animations are the easiest to feel).
-2. Finding #9 (present coalescing) next, since it complements #1 and removes the
-   need for hand-applied throttles like `booty.c`'s `t % 3`.
-3. Finding #4 (font cache exception) and #7 (log arg allocations). Trivial,
-   safe, and help text-heavy and map-drawing screens.
-4. Finding #5 (gamma LUT cache) if anyone uses color correction (integration
-   branch only).
-5. Finding #3 opaque fast path, then dirty rectangles. Largest structural win,
-   most care required; the opaque fast path alone captures much of it.
-6. Finding #6 (text caching) and #8 (row blits) as follow-ups.
+1. Finding #0: build and distribute Release (or RelWithDebInfo), not Debug. This
+   is the measured headline, about 5x on the present path and "feels normal" by
+   hand, and it is effectively a one-line default change in `build-windows.sh`.
+   Everything below is secondary to this.
+2. Finding #1 via Experiment B: make the persistent streaming texture the default
+   and delete the per-present surface/texture recreation. Measured ~15 to 17
+   percent off the present path, low risk, pixel-identical.
+3. Finding #9 (present coalescing) if further present-path wins are wanted; it
+   removes the need for hand-applied throttles like `booty.c`'s `t % 3`. Lower
+   urgency now that each Release present is ~1.5 ms.
+4. Do NOT pursue Finding #2 / Experiment A (drop `SDL_SyncWindow`): measured zero
+   benefit, sync is already ~0.001 ms.
+5. If animation still feels slow in Release, measure the draw side first, then
+   act on Finding #4 (font cache exception) and #7 (log arg allocations), which
+   are trivial and safe, before the larger Finding #3 (opaque fast path, then
+   dirty rectangles) and Finding #6 (text caching) / #8 (row blits).
+6. Finding #5 (gamma LUT cache) only matters on `integration`, and only if color
+   correction is enabled.
 
-## Branch experiment plan
+## Branch experiment plan (executed; results recorded)
 
-Safe to prototype on a throwaway branch; none of these change compositing
-output. This branch is based on `main`, so the `fix-treasure-screen` mitigations
-referenced above (the `t % 3` throttle, `MouseDownPending`) are not present here
-unless that branch has merged; treat them as the maintainers' parallel work to
-compare against.
+Prototyped on `render-perf-investigation` (based on `main`). The instrumentation
+and both experiments are opt-in via environment variables, so the default build
+is unchanged. Steps 1 to 3 are done; the Measurements section above has the
+numbers.
 
-1. Measure first. Add temporary timing around `SDL_CreateTextureFromSurface`,
-   `SDL_RenderTexture`, `SDL_RenderPresent`, and `SDL_SyncWindow` in
-   `recomposite()` and log per-present milliseconds. Run a spell animation and a
-   full-screen redraw (begin-adventure). This settles the
-   vsync-vs-texture-vs-syncwindow question with numbers.
-2. Experiment A (low risk): remove `SDL_SyncWindow` from the per-present path,
-   keep it only in resize handlers. Re-measure.
-3. Experiment B (low risk): replace the throwaway surface+texture with one
-   persistent `SDL_TEXTUREACCESS_STREAMING` texture updated via
-   `SDL_UpdateTexture`. Re-measure.
-4. Experiment C (medium): add present coalescing (#9), mapping
-   `RecompositeAlways` to a forced present.
-5. Validate behavior: confirm animations still show each intended frame and that
-   output is pixel-identical. `ENABLE_RECOMPOSITE_DEBUG` dumps the composited
-   buffer to BMP, so a before/after diff of the same scene is a cheap regression
-   check that the optimizations did not alter pixels.
+1. Measure first. Done. Added per-present phase timing to `recomposite()`
+   (`REALMZ_PERF=1`). Captured Debug first, which was misleading, then Release.
+2. Experiment A (`REALMZ_NO_SYNCWINDOW=1`): done, no measurable effect. Shelved.
+3. Experiment B (`REALMZ_PERSISTENT_TEXTURE=1`): done, ~15 to 17 percent off the
+   present path. Recommend promoting to default and removing the recreation path.
+4. Experiment C (present coalescing, #9): not yet prototyped. Optional follow-up.
+5. Validate behavior: when B is promoted to default, confirm output is
+   pixel-identical. `ENABLE_RECOMPOSITE_DEBUG` dumps the composited buffer to
+   BMP, so a before/after diff of the same scene is a cheap regression check.
 
-The point is to hand the maintainers measurements and a working prototype rather
-than a hypothesis.
+Methodology notes worth keeping: measure in Release, not Debug (Debug inflates
+the CPU composite about 13x and adds per-primitive stderr logging that slows the
+whole game), and make sure the timing flag is actually set in every run (the
+first attempt left `REALMZ_PERF` unset for three of four runs because each batch
+file is a separate process).
