@@ -95,8 +95,13 @@ Debug vs Release, baseline (the headline, finding #0):
 | total | 7.71 | 1.53 | ~5x |
 
 The composite phase is pure CPU per-pixel work, so `-O0` was inflating it about
-13x; in Release it is half a millisecond. The user also confirmed by feel that
-the Release build "feels normal" where the Debug build felt slow. Since
+13x; in Release it is half a millisecond. The phase breakdown isolates the gain:
+only the composite phase (entirely `phosg::Image` work) sped up, while the SDL
+upload and present phases were unchanged from Debug to Release. The compositor
+author independently confirmed the mechanism, that `phosg::Image`, used for all
+the rendering, has many hot per-pixel loops that depend on compiler
+optimizations being enabled. The user also confirmed by feel that the Release
+build "feels normal" where the Debug build felt slow. Since
 `build-windows.sh` defaults `BUILD_TYPE=Debug` and `rebuild-integration.sh` does
 not override it, the shared test releases people judge as slow are Debug builds
 (the shipped exe is ~41 MB, matching a Debug build; Release is ~28 MB). Building
