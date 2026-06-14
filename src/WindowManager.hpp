@@ -104,6 +104,12 @@ private:
   SDL_ScaleMode scale_mode = SDL_SCALEMODE_PIXELART;
   bool aspect_locked = true;
   int gamma_idx = 0;
+  // Cached gamma correction state, so the present path does not rebuild the LUT
+  // or reallocate the pixel buffer every frame. The LUT is rebuilt only when
+  // gamma_idx changes; the scratch buffer is reused across presents.
+  int gamma_lut_idx = -1;
+  uint8_t gamma_lut[256] = {};
+  std::vector<uint32_t> gamma_scratch;
 
   WindowManager();
 
