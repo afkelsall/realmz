@@ -745,6 +745,12 @@ backup:
         box.left = 7 + tt * 50;
         box.right = box.left + 50;
 
+        // Batch the whole hover redraw (selection oval plus the item description
+        // and stats) into one present. Each draw call otherwise recomposites and
+        // presents the whole screen, so the highlight and values took a notable
+        // moment to appear and blocked clicks while they did.
+        int hover_recomposite = WindowManager_SetEnableRecomposite(0);
+
         PenMode(2);
         FrameOval(&oldbox);
 
@@ -930,8 +936,11 @@ backup:
           }
         } else
           SetCCursor(sword);
+
+        WindowManager_SetEnableRecomposite(hover_recomposite);
       }
     } else if (oldinc) {
+      int leave_recomposite = WindowManager_SetEnableRecomposite(0);
       PenMode(2);
       FrameOval(&box);
       oldbox.top = oldbox.left = oldbox.right = oldbox.bottom = oldinc = 0;
@@ -948,6 +957,8 @@ backup:
         textbox(3, temp, FALSE, TRUE, textboxrect); /************ hardwire for no message ************/
       } else
         textbox(-1, -(messageafter), FALSE, TRUE, textboxrect);
+
+      WindowManager_SetEnableRecomposite(leave_recomposite);
     }
 
     switch (gTheEvent.what) {
@@ -1605,10 +1616,16 @@ backup:
                       InsetRect(&temprect, 10, 10);
 
                       int enable_recomposite = WindowManager_SetEnableRecomposite(0);
+
+                      // Skip the take flourish when another click is already queued,
+                      // so grabbing several items in quick succession stays responsive
+                      // instead of waiting on each animation. The cell repaint below
+                      // still runs, so the item is removed cleanly either way.
+                      Boolean animate = !MouseDownPending();
                       PenMode(2);
                       FrameOval(&oldbox);
                       PenMode(0);
-                      for (t = 0; t < 24; t++) {
+                      for (t = 0; animate && t < 24; t++) {
                         RGBForeColor(&tempcolor);
                         InsetRect(&icon, 1, 1);
                         InsetRect(&temprect, -1, -1);
