@@ -141,12 +141,47 @@ Conclusions:
   ms, essentially 0 percent of presents over the 16.7 ms (60fps) budget. The
   "composite dominates" picture from the first capture was a Debug artifact.
 
-Caveat on scope: this instrumentation times only `recomposite()` (composite plus
-present). It does not time the drawing primitives that run between recomposites
-(CopyBits, text, oval/line draws), nor game logic. If any animation still feels
-slow in a Release build, the next measurement should cover the draw side
-(findings #4, #6, #7, #8) and the number of presents per animation (finding #9),
-not the present path itself.
+### Draw-side capture (Release, with `qd_perf`)
+
+The draw side was then instrumented (leaf QuickDraw primitives time themselves;
+each present also reports `gap`, the wall time since the previous present, and
+`draw`, the accumulated primitive time). A normal play session of 5236 presents:
+
+| bucket | total over session | per present |
+|--------|-------------------:|------------:|
+| drawing primitives (`draw`) | 0.42 s | mean 0.08 ms, p99 1.5 ms |
+| composite | 2.80 s | mean 0.54 ms |
+| upload | 1.44 s | mean 0.28 ms |
+| present | 6.14 s | mean 1.17 ms, p99 22 ms |
+| whole present path (`total`) | 10.40 s | mean 1.99 ms |
+| `gap` between presents | 179.18 s | - |
+
+What this says:
+
+- Drawing is not a bottleneck. The QuickDraw primitives cost 0.42 s across the
+  whole session. The heaviest single frame was a 17.8 ms one-time draw and a few
+  batched screen redraws of 75 to 145 primitives at 3 to 7 ms each (character
+  sheet / shop style screens); everything else is sub-millisecond. So findings
+  #4, #6, #7, #8 are real code smells but not worth chasing for speed in Release.
+- The session wall time is dominated by `gap` (179 s), and `gap` is almost
+  entirely not drawing (draw is 0.42 s of it). The rest is game logic, the
+  `SystemTask`/`SDL_Delay` sleeps in the game's loops, and idle time between user
+  actions. Looked at another way, of the 157 inter-present gaps in the 16.7 to
+  250 ms range (the band that would feel like jank during continuous activity),
+  drawing accounts for ~0 percent; they are paced by loop logic and sleeps, not
+  rendering.
+- Within the render path, `present` is now the largest component (6.1 s, mean
+  1.17 ms, occasional spikes to 22 to 51 ms from the driver/compositor), ahead of
+  composite and upload. It is also not vsync clustered (median 0.30 ms), so still
+  no vsync stall.
+
+Conclusion: in a Release build the render path is not the bottleneck for
+anything, and the drawing primitives are negligible. The only remaining
+render-side lever is present coalescing (finding #9), which would cut the present
+count and the occasional present spikes; its expected payoff is marginal given
+the path is already ~2 ms per present. Any residual animation pacing lives in the
+game loop (the per-frame sleeps and logic), which is original 1994 behavior and a
+different, riskier investigation than render optimization.
 
 ---
 
