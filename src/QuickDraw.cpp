@@ -174,7 +174,7 @@ phosg::ImageRGBA8888N image_for_sdl_surface(SDL_Surface* surface) {
   return ret;
 }
 
-bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect) {
+bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect, bool baseline_anchor) {
   size_t w = rect.right - rect.left;
   size_t h = rect.bottom - rect.top;
   auto sdl_color = sdl_color_for_rgb_color(this->rgbFgColor);
@@ -185,10 +185,25 @@ bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text
     return false;
   } else {
     auto img = image_for_sdl_surface(text_surface.get());
-    // This is annoying, but it seems there isn't a better way to do it... if the rendered text height exceeds the
-    // target rect, we trim off some of the top rows to center it vertically. This isn't exactly correct (some text
-    // appears to be off by 1 or 2 pixels sometimes) but it will do for now. There aren't good metrics provided by
-    // SDL_ttf for this (ascent/height don't match the actual amount we need to trim) so we have to do this instead.
+    if (baseline_anchor) {
+      // Pen-based DrawText places the pen at the text baseline, and QuickDraw draws glyphs
+      // hanging off that baseline. The caller builds the rect so rect.bottom + descent equals
+      // the pen's v (descent is negative). The rendered surface puts its own baseline
+      // TTF_GetFontAscent rows below its top edge, so we position the surface top at
+      // baseline - ascent and draw the full glyph height. Centering the surface in the box
+      // instead sits it slightly off, since the surface includes the font's ascent above the
+      // caps and line spacing below the descent.
+      int ascent = TTF_GetFontAscent(font);
+      int descent = TTF_GetFontDescent(font); // negative: pixels below the baseline
+      ssize_t dst_y = rect.bottom + descent - ascent;
+      data.copy_from_with_blend(
+          img, rect.left, dst_y, static_cast<ssize_t>(w), static_cast<ssize_t>(img.get_height()), 0, 0);
+      return true;
+    }
+    // Dialog item text: center the rendered image in the box. This isn't exactly correct (some
+    // text appears to be off by 1 or 2 pixels sometimes) but it will do for now. There aren't
+    // good metrics provided by SDL_ttf for this (ascent/height don't match the actual amount we
+    // need to trim) so we have to do this instead.
     size_t y_offset = (img.get_height() > h) ? ((img.get_height() - h) / 2) : 0;
     data.copy_from_with_blend(img, rect.left, rect.top, w, h, 0, y_offset);
     return true;
@@ -262,7 +277,7 @@ void CCGrafPort::draw_text(const std::string& text) {
         this->pnLoc.h,
         static_cast<int16_t>(this->pnLoc.v - descent),
         static_cast<int16_t>(this->pnLoc.h + w)};
-    width = this->draw_text_ttf(tt_font, processed_text, r) ? w : -1;
+    width = this->draw_text_ttf(tt_font, processed_text, r, /*baseline_anchor=*/true) ? w : -1;
 
   } else if (std::holds_alternative<ResourceDASM::BitmapFontRenderer>(font)) {
 

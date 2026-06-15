@@ -82,7 +82,7 @@ public:
   }
 
 protected:
-  bool draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect);
+  bool draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect, bool baseline_anchor = false);
   bool draw_text_bitmap(const ResourceDASM::BitmapFontRenderer& renderer, const std::string& text, const Rect& rect);
 };
 
