@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <format>
 #include <phosg/Filesystem.hh>
+#include <phosg/Strings.hh>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -15,6 +16,8 @@
 
 static std::vector<std::pair<std::string, short>> characters;
 static std::unordered_set<std::string> hidden_characters;
+
+static phosg::PrefixedLogger characters_log("[Character Files] ");
 
 extern "C" void hide_character_from_list(const char* name) {
   hidden_characters.emplace(name);
@@ -27,10 +30,14 @@ extern "C" void unhide_character_from_list(const char* name) {
 extern "C" void update_character_files_list() {
   characters.clear();
   for (const auto& filename : mac_list_directory(":Character Files")) {
-    auto f = mac_fopen_unique(std::format(":Character Files:{}", filename), "rb");
-    auto ch = phosg::freadx<struct character>(f.get());
-    CvtCharacterToPc(&ch);
-    characters.emplace_back(std::make_pair(filename, ch.level));
+    try {
+      auto f = mac_fopen_unique(std::format(":Character Files:{}", filename), "rb");
+      auto ch = phosg::freadx<struct character>(f.get());
+      CvtCharacterToPc(&ch);
+      characters.emplace_back(std::make_pair(filename, ch.level));
+    } catch (phosg::io_error const& error) {
+      characters_log.info_f("Skipped bad character {} ({}).", filename, error.what());
+    }
   }
   std::sort(characters.begin(), characters.end());
 }
