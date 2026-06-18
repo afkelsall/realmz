@@ -174,40 +174,16 @@ phosg::ImageRGBA8888N image_for_sdl_surface(SDL_Surface* surface) {
   return ret;
 }
 
-bool CCGrafPort::draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect, bool baseline_anchor) {
-  size_t w = rect.right - rect.left;
-  size_t h = rect.bottom - rect.top;
+std::optional<phosg::ImageRGBA8888N> CCGrafPort::render_text_ttf(
+    TTF_Font* font, const std::string& processed_text, size_t wrap_width) {
   auto sdl_color = sdl_color_for_rgb_color(this->rgbFgColor);
   auto text_surface = sdl_make_unique(TTF_RenderText_Blended_Wrapped(
-      font, processed_text.data(), processed_text.size(), sdl_color, w + 50));
+      font, processed_text.data(), processed_text.size(), sdl_color, wrap_width));
   if (!text_surface) {
     this->log.error_f("Failed to create surface when rendering text: {}", SDL_GetError());
-    return false;
-  } else {
-    auto img = image_for_sdl_surface(text_surface.get());
-    if (baseline_anchor) {
-      // Pen-based DrawText places the pen at the text baseline, and QuickDraw draws glyphs
-      // hanging off that baseline. The caller builds the rect so rect.bottom + descent equals
-      // the pen's v (descent is negative). The rendered surface puts its own baseline
-      // TTF_GetFontAscent rows below its top edge, so we position the surface top at
-      // baseline - ascent and draw the full glyph height. Centering the surface in the box
-      // instead sits it slightly off, since the surface includes the font's ascent above the
-      // caps and line spacing below the descent.
-      int ascent = TTF_GetFontAscent(font);
-      int descent = TTF_GetFontDescent(font); // negative: pixels below the baseline
-      ssize_t dst_y = rect.bottom + descent - ascent;
-      data.copy_from_with_blend(
-          img, rect.left, dst_y, static_cast<ssize_t>(w), static_cast<ssize_t>(img.get_height()), 0, 0);
-      return true;
-    }
-    // Dialog item text: center the rendered image in the box. This isn't exactly correct (some
-    // text appears to be off by 1 or 2 pixels sometimes) but it will do for now. There aren't
-    // good metrics provided by SDL_ttf for this (ascent/height don't match the actual amount we
-    // need to trim) so we have to do this instead.
-    size_t y_offset = (img.get_height() > h) ? ((img.get_height() - h) / 2) : 0;
-    data.copy_from_with_blend(img, rect.left, rect.top, w, h, 0, y_offset);
-    return true;
+    return std::nullopt;
   }
+  return image_for_sdl_surface(text_surface.get());
 }
 
 bool CCGrafPort::draw_text_bitmap(const ResourceDASM::BitmapFontRenderer& renderer, const std::string& text, const Rect& rect) {
@@ -232,7 +208,17 @@ bool CCGrafPort::draw_text(const std::string& text, const Rect& r) {
     auto tt_font = std::get<TTF_Font*>(font);
     TTF_SetFontSize(tt_font, this->txSize);
     set_font_style(tt_font, this->txFace);
-    success = this->draw_text_ttf(tt_font, processed_text, r);
+    size_t w = r.right - r.left;
+    size_t h = r.bottom - r.top;
+    if (auto img = this->render_text_ttf(tt_font, processed_text, w + 50)) {
+      // Dialog item text: center the rendered image in the box. This isn't exactly correct (some
+      // text appears to be off by 1 or 2 pixels sometimes) but it will do for now. There aren't
+      // good metrics provided by SDL_ttf for this (ascent/height don't match the actual amount we
+      // need to trim) so we have to do this instead.
+      size_t y_offset = (img->get_height() > h) ? ((img->get_height() - h) / 2) : 0;
+      data.copy_from_with_blend(*img, r.left, r.top, w, h, 0, y_offset);
+      success = true;
+    }
 
   } else if (std::holds_alternative<ResourceDASM::BitmapFontRenderer>(font)) {
     this->log.debug_f("draw_text(\"{}\", {{x1={}, y1={}, x2={}, y2={}}}) font={} (bitmap) size={} style={}",
@@ -264,20 +250,23 @@ void CCGrafPort::draw_text(const std::string& text) {
     TTF_SetFontSize(tt_font, this->txSize);
     set_font_style(tt_font, this->txFace);
 
-    // The pen location, passed in as the x and y parameters, is at the baseline of the text, to
-    // the left. So, we need to account for this in our display rect.
-    // Descent is a negative number, representing the pixels below the baseline the text may extend.
-    auto descent = TTF_GetFontDescent(tt_font);
-    this->log.debug_f("draw_text(\"{}\") font={} (TTF) size={} style={} descent={}",
-        processed_text, this->txFont, this->txSize, this->txFace, descent);
+    this->log.debug_f("draw_text(\"{}\") font={} (TTF) size={} style={}",
+        processed_text, this->txFont, this->txSize, this->txFace);
 
     auto [w, h] = pixel_dimensions_for_text(tt_font, processed_text);
-    Rect r{
-        static_cast<int16_t>(this->pnLoc.v - h - descent),
-        this->pnLoc.h,
-        static_cast<int16_t>(this->pnLoc.v - descent),
-        static_cast<int16_t>(this->pnLoc.h + w)};
-    width = this->draw_text_ttf(tt_font, processed_text, r, /*baseline_anchor=*/true) ? w : -1;
+    if (auto img = this->render_text_ttf(tt_font, processed_text, w + 50)) {
+      // The pen location is at the text baseline, to the left, so we anchor on the baseline
+      // rather than the upper-left corner. The rendered surface puts its own baseline
+      // TTF_GetFontAscent rows below its top edge, so positioning the surface top at
+      // pnLoc.v - ascent lands the glyphs on the pen baseline. Drawing the full glyph height
+      // keeps the descenders; centering in a box instead sits the text slightly off, since the
+      // surface includes the font's ascent above the caps and line spacing below the descent.
+      int ascent = TTF_GetFontAscent(tt_font);
+      ssize_t dst_y = this->pnLoc.v - ascent;
+      data.copy_from_with_blend(
+          *img, this->pnLoc.h, dst_y, static_cast<ssize_t>(w), static_cast<ssize_t>(img->get_height()), 0, 0);
+      width = w;
+    }
 
   } else if (std::holds_alternative<ResourceDASM::BitmapFontRenderer>(font)) {
 

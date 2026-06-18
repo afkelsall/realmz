@@ -6,6 +6,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include <memory>
+#include <optional>
 #include <phosg/Image.hh>
 #include <phosg/Strings.hh>
 #include <resource_file/BitmapFontRenderer.hh>
@@ -82,7 +83,7 @@ public:
   }
 
 protected:
-  bool draw_text_ttf(TTF_Font* font, const std::string& processed_text, const Rect& rect, bool baseline_anchor = false);
+  std::optional<phosg::ImageRGBA8888N> render_text_ttf(TTF_Font* font, const std::string& processed_text, size_t wrap_width);
   bool draw_text_bitmap(const ResourceDASM::BitmapFontRenderer& renderer, const std::string& text, const Rect& rect);
 };
 
