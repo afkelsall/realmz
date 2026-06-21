@@ -977,7 +977,8 @@ tryagain:
             thief.type[6] = TRUE;
           }
 
-          if (Rand(100) < thief.sound[2] * powerlevel) {
+          /*** knock uses sound[1]; sound[2] is disarmtrap ***/
+          if (Rand(100) < knockchance) {
             thief.type[9] = FALSE; /*** success ***/
 
             sound(thief.sounds[6]);
