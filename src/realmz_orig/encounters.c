@@ -977,7 +977,10 @@ tryagain:
             thief.type[6] = TRUE;
           }
 
-          if (Rand(100) < thief.sound[2] * powerlevel) {
+          /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+           * Open Lock uses thief.sound[1]; thief.sound[2] is Destroy Trap.
+           */
+          if (Rand(100) < knockchance) {
             thief.type[9] = FALSE; /*** success ***/
 
             sound(thief.sounds[6]);
