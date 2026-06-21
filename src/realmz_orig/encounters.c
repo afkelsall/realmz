@@ -977,7 +977,9 @@ tryagain:
             thief.type[6] = TRUE;
           }
 
-          /*** knock uses sound[1]; sound[2] is disarmtrap ***/
+          /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+           * Open Lock uses thief.sound[1]; thief.sound[2] is Destroy Trap.
+           */
           if (Rand(100) < knockchance) {
             thief.type[9] = FALSE; /*** success ***/
 
