@@ -821,16 +821,15 @@ CIconHandle GetCIcon(uint16_t iconID) {
       static_cast<int16_t>(decoded_cicn.image.get_height()),
       static_cast<int16_t>(decoded_cicn.image.get_width())};
   (*h)->iconPMap.pixelSize = 32;
-  // The monochrome bitmap is optional in a cicn resource; when it's absent,
-  // decode_cicn returns an empty (0x0) bitmap. Size iconBMap from the bitmap
-  // itself rather than the color image, so PlotCIconBitmap doesn't try to blit
-  // color-image-sized data out of an empty buffer. When a bitmap is present,
-  // decode_cicn guarantees its dimensions match the pixmap's.
-  (*h)->iconBMap.bounds = Rect{
-      0,
-      0,
-      static_cast<int16_t>(decoded_cicn.bitmap.get_height()),
-      static_cast<int16_t>(decoded_cicn.bitmap.get_width())};
+  // iconBMap.bounds must mirror the color image's dimensions. A lot of the
+  // original game code reads iconBMap.bounds as the icon's natural size to make
+  // layout decisions (e.g. centerpict.c expands the draw rect for 64x64 monster
+  // tiles like the 2x2 spider, and ploticon.c insets for 44x44 portraits). The
+  // monochrome bitmap itself is optional and frequently absent (decode_cicn then
+  // returns an empty 0x0 bitmap), so it cannot be used for that purpose. The
+  // crash that used to occur when blitting an absent bitmap is prevented by the
+  // empty-bitmap guard in PlotCIconBitmap, not by shrinking these bounds.
+  (*h)->iconBMap.bounds = (*h)->iconPMap.bounds;
   return h;
 }
 
