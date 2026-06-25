@@ -395,10 +395,17 @@ void save(short mode) {
   fwrite(&bankavailable, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
 
   /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
-   * See note in main.c about sizeof(long) vs. sizeof(int32_t). */
+   * See note in main.c about sizeof(long) vs. sizeof(int32_t).
+   * The original code did not byteswap bank or templecost, which stored them in host byte order and made the values
+   * unreadable on a different-endian machine. Store them big-endian like every other multi-byte field so the saves
+   * match the original Mac format and load correctly; the loader converts them back. */
+  CvtTabLongToPc(&bank, 3);
   fwrite(&bank, sizeof(int32_t), 3, fp); //*** fantasoft v7.1b  broke it up so work on PC side
+  CvtTabLongToPc(&bank, 3);
 
+  CvtShortToPc(&templecost);
   fwrite(&templecost, sizeof(short), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
+  CvtShortToPc(&templecost);
   fwrite(&inboat, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
   fwrite(&boatright, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
   fwrite(&canencounter, sizeof(char), 1, fp); //*** fantasoft v7.1b  broke it up so work on PC side
@@ -439,13 +446,20 @@ void save(short mode) {
    * NOTE(danapplegate): This appears to have been a bug, possibly introduced by Myriad
    * as the comments speculate. cancamp is a scalar short variable, while these calls
    * seem to think it is an array of 10 shorts. This was causing buffer overflows.
+   *
+   * The original retail saves store 10 shorts here, so write the value plus zero padding
+   * out of a local buffer. This keeps our saves the same size as the originals and avoids
+   * the overflow of reading past the single cancamp variable.
    */
   // CvtTabShortToPc(&cancamp, 10); // Myriad ????
   // fwrite(&cancamp, sizeof cancamp, 10, fp);
   // CvtTabShortToPc(&cancamp, 10); // Myriad ????
-  CvtTabShortToPc(&cancamp, 1); // Myriad ????
-  fwrite(&cancamp, sizeof cancamp, 1, fp);
-  CvtTabShortToPc(&cancamp, 1); // Myriad ????
+  {
+    short cancamparray[10] = {0};
+    cancamparray[0] = cancamp;
+    CvtShortToPc(&cancamparray[0]);
+    fwrite(cancamparray, sizeof(short), 10, fp);
+  }
   /* *** END CHANGES *** */
 
   CvtTabItemToPc(&storage, 6);
