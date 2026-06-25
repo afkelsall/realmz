@@ -69,6 +69,14 @@ short attack(short chare, short mon) {
       }
     }
     damage += item.damage; /******* magic plus ****/
+    /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+     * The weapon magic plus (item.damage) was added to player melee damage but
+     * never to the to-hit roll. The monster path (attack2) and missile path
+     * (resolvespell) both add 5 per point, and the character sheet attack bonus
+     * already includes it (damage * 5), so player melee was the only path that
+     * ignored it. Add the same term here. */
+    att += 5 * item.damage; /******* magic plus to hit; matches attack2 and resolvespell ****/
+    /* *** END CHANGES *** */
     if (item.sp1 == 121)
       att += 5 * item.damage; /******* double to hit weapon ****/
 
