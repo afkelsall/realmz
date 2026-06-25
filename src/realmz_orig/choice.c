@@ -1,6 +1,10 @@
 #include "prototypes.h"
 #include "variables.h"
 
+/* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+ * Added a TrackControl action proc so the shop/character item lists follow the
+ * scrollbar thumb live during a drag. The original passed a null action proc to
+ * TrackControl and only redrew the list once the mouse was released. */
 /*********** live thumb-drag redraw ***********/
 /* TrackControl calls this each time the scroll value changes while the thumb is
    being dragged, so the item list follows the thumb live instead of only
@@ -13,6 +17,7 @@ static pascal void shoplivescroll(ControlHandle thecontrol, short part) {
   Display(0);
   skip = FALSE;
 }
+/* *** END CHANGES *** */
 
 /***************************** choice *** shop buttons ********************/
 short choice(short key) {
@@ -298,6 +303,8 @@ short choice(short key) {
 
   if (theControl == shopitemsvert) {
     if (thePart == kControlIndicatorPart) {
+      /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+       * Pass shoplivescroll as the action proc (was 0L) for the live thumb drag. */
       thePart = TrackControl(shopitemsvert, point, (ProcPtr) shoplivescroll);
       skip = TRUE;
       Display(0);
@@ -310,6 +317,8 @@ short choice(short key) {
     }
   } else if (theControl == charitemsvert) {
     if (thePart == kControlIndicatorPart) {
+      /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+       * Pass shoplivescroll as the action proc (was 0L) for the live thumb drag. */
       thePart = TrackControl(charitemsvert, point, (ProcPtr) shoplivescroll);
       skip = TRUE;
       Display(0);

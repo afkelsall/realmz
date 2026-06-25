@@ -528,114 +528,129 @@ public:
         // they render correctly when 2.59 color correction is active; without
         // correction they match the raw Mac OS 9 output rather than the
         // SheepShaver-presented output.
-        const RGBColor BLACK = {.red = 0x0000, .green = 0x0000, .blue = 0x0000};
-        const RGBColor TRK_FILL = {.red = 0xA9A9, .green = 0xA9A9, .blue = 0xA9A9};
-        const RGBColor TRK_S1 = {.red = 0x7777, .green = 0x7777, .blue = 0x7777}; // recessed shadow, darkest
-        const RGBColor TRK_S2 = {.red = 0x8888, .green = 0x8888, .blue = 0x8888};
-        const RGBColor TRK_H1 = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA};
-        const RGBColor TRK_H2 = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xCCCC}; // recessed highlight, lightest
-        const RGBColor TH_HI = {.red = 0xEEEE, .green = 0xEEEE, .blue = 0xEEEE}; // thumb top-left highlight
-        const RGBColor TH_LT = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF}; // thumb light periwinkle
-        const RGBColor TH_MD = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF}; // thumb mid periwinkle
-        const RGBColor TH_SH = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC}; // thumb bottom-right shadow
-        const RGBColor TH_GR = {.red = 0x3434, .green = 0x3434, .blue = 0x9999}; // thumb grip line
+        const RGBColor black = {.red = 0x0000, .green = 0x0000, .blue = 0x0000};
+        const RGBColor track_fill = {.red = 0xA9A9, .green = 0xA9A9, .blue = 0xA9A9};
+        const RGBColor track_shadow_dark = {.red = 0x7777, .green = 0x7777, .blue = 0x7777}; // recessed shadow, darkest
+        const RGBColor track_shadow = {.red = 0x8888, .green = 0x8888, .blue = 0x8888};
+        const RGBColor track_highlight = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA};
+        const RGBColor track_highlight_light = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xCCCC}; // recessed highlight, lightest
+        const RGBColor thumb_highlight = {.red = 0xEEEE, .green = 0xEEEE, .blue = 0xEEEE}; // thumb top-left highlight
+        const RGBColor thumb_light = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF}; // thumb light periwinkle
+        const RGBColor thumb_mid = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF}; // thumb mid periwinkle
+        const RGBColor thumb_shadow = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC}; // thumb bottom-right shadow
+        const RGBColor thumb_grip = {.red = 0x3434, .green = 0x3434, .blue = 0x9999}; // thumb grip line
         // Pressed thumb: the same ramp shifted one step darker while it is dragged.
-        const RGBColor TH_HI_P = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF};
-        const RGBColor TH_LT_P = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF};
-        const RGBColor TH_MD_P = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC};
-        const RGBColor TH_SH_P = {.red = 0x3434, .green = 0x3434, .blue = 0x9999};
-        const RGBColor TH_GR_P = {.red = 0x0000, .green = 0x0000, .blue = 0x5555};
-        const RGBColor AR_FACE = {.red = 0xDDDD, .green = 0xDDDD, .blue = 0xDDDD};
-        const RGBColor AR_HI = {.red = 0xFFFF, .green = 0xFFFF, .blue = 0xFFFF}; // arrow top-left highlight
-        const RGBColor AR_SH = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA}; // arrow bottom-right shadow
+        const RGBColor thumb_highlight_pressed = {.red = 0xCCCC, .green = 0xCCCC, .blue = 0xFFFF};
+        const RGBColor thumb_light_pressed = {.red = 0x9999, .green = 0x9999, .blue = 0xFFFF};
+        const RGBColor thumb_mid_pressed = {.red = 0x6666, .green = 0x6666, .blue = 0xCCCC};
+        const RGBColor thumb_shadow_pressed = {.red = 0x3434, .green = 0x3434, .blue = 0x9999};
+        const RGBColor thumb_grip_pressed = {.red = 0x0000, .green = 0x0000, .blue = 0x5555};
+        const RGBColor arrow_face = {.red = 0xDDDD, .green = 0xDDDD, .blue = 0xDDDD};
+        const RGBColor arrow_highlight = {.red = 0xFFFF, .green = 0xFFFF, .blue = 0xFFFF}; // arrow top-left highlight
+        const RGBColor arrow_shadow = {.red = 0xBABA, .green = 0xBABA, .blue = 0xBABA}; // arrow bottom-right shadow
         // Pressed (pushed-in) arrow palette: darker face with the bevel inverted.
-        const RGBColor AR_FACE_P = {.red = 0x7777, .green = 0x7777, .blue = 0x7777};
-        const RGBColor AR_HI_P = {.red = 0x5555, .green = 0x5555, .blue = 0x5555}; // top-left, now dark
-        const RGBColor AR_SH_P = {.red = 0x9999, .green = 0x9999, .blue = 0x9999}; // bottom-right, now light
+        const RGBColor arrow_face_pressed = {.red = 0x7777, .green = 0x7777, .blue = 0x7777};
+        const RGBColor arrow_highlight_pressed = {.red = 0x5555, .green = 0x5555, .blue = 0x5555}; // top-left, now dark
+        const RGBColor arrow_shadow_pressed = {.red = 0x9999, .green = 0x9999, .blue = 0x9999}; // bottom-right, now light
 
-        // Single pixel, horizontal run [x0..x1], and vertical run [y0..y1].
-        auto px = [&](int16_t x, int16_t y, const RGBColor& c) {
-          RGBForeColor(&c);
-          port.fill_rect(Rect{.top = y, .left = x, .bottom = static_cast<int16_t>(y + 1), .right = static_cast<int16_t>(x + 1)});
+        // Painter primitives for the bar: a single pixel, a horizontal run
+        // [x0..x1], a vertical run [y0..y1], and a filled box (right/bottom
+        // exclusive). These are real member functions rather than captured
+        // lambdas, and they take plain ints so the pixel arithmetic at the call
+        // sites stays cast-free; the narrowing to the Rect's int16_t fields
+        // happens here, in one place.
+        struct Painter {
+          CCGrafPort& port;
+          void pixel(int x, int y, const RGBColor& c) const {
+            RGBForeColor(&c);
+            port.fill_rect(Rect{.top = static_cast<int16_t>(y), .left = static_cast<int16_t>(x),
+                .bottom = static_cast<int16_t>(y + 1), .right = static_cast<int16_t>(x + 1)});
+          }
+          void hrun(int x0, int x1, int y, const RGBColor& c) const {
+            RGBForeColor(&c);
+            port.fill_rect(Rect{.top = static_cast<int16_t>(y), .left = static_cast<int16_t>(x0),
+                .bottom = static_cast<int16_t>(y + 1), .right = static_cast<int16_t>(x1 + 1)});
+          }
+          void vrun(int x, int y0, int y1, const RGBColor& c) const {
+            RGBForeColor(&c);
+            port.fill_rect(Rect{.top = static_cast<int16_t>(y0), .left = static_cast<int16_t>(x),
+                .bottom = static_cast<int16_t>(y1 + 1), .right = static_cast<int16_t>(x + 1)});
+          }
+          void box(int left, int top, int right, int bottom, const RGBColor& c) const {
+            RGBForeColor(&c);
+            port.fill_rect(Rect{.top = static_cast<int16_t>(top), .left = static_cast<int16_t>(left),
+                .bottom = static_cast<int16_t>(bottom), .right = static_cast<int16_t>(right)});
+          }
         };
-        auto hspan = [&](int16_t x0, int16_t x1, int16_t y, const RGBColor& c) {
-          RGBForeColor(&c);
-          port.fill_rect(Rect{.top = y, .left = x0, .bottom = static_cast<int16_t>(y + 1), .right = static_cast<int16_t>(x1 + 1)});
-        };
-        auto vspan = [&](int16_t x, int16_t y0, int16_t y1, const RGBColor& c) {
-          RGBForeColor(&c);
-          port.fill_rect(Rect{.top = y0, .left = x, .bottom = static_cast<int16_t>(y1 + 1), .right = static_cast<int16_t>(x + 1)});
-        };
+        Painter paint{port};
 
-        const int16_t bx0 = r.left, bx1 = static_cast<int16_t>(r.right - 1); // black border columns
-        const int16_t by0 = r.top, by1 = static_cast<int16_t>(r.bottom - 1); // black border rows
-        const int16_t ix0 = static_cast<int16_t>(bx0 + 1), ix1 = static_cast<int16_t>(bx1 - 1); // interior columns
-        const int16_t th_h = w; // thumb border-to-border height
-        const int16_t ar_h = static_cast<int16_t>(w - 1); // each arrow button border-to-border height
-        const int16_t up_top = static_cast<int16_t>(by1 - 2 * ar_h); // up-arrow top border row
-        const int16_t dn_top = static_cast<int16_t>(up_top + ar_h); // down-arrow top border row
-        const int16_t cx = static_cast<int16_t>((ix0 + ix1 + 1) / 2); // glyph/grip center column
-        const int16_t thumb_top = static_cast<int16_t>(r.top + slider_offset);
+        const int bx0 = r.left, bx1 = r.right - 1; // black border columns
+        const int by0 = r.top, by1 = r.bottom - 1; // black border rows
+        const int ix0 = bx0 + 1, ix1 = bx1 - 1; // interior columns
+        const int th_h = w; // thumb border-to-border height
+        const int ar_h = w - 1; // each arrow button border-to-border height
+        const int up_top = by1 - 2 * ar_h; // up-arrow top border row
+        const int dn_top = up_top + ar_h; // down-arrow top border row
+        const int cx = (ix0 + ix1 + 1) / 2; // glyph/grip center column
+        const int thumb_top = r.top + slider_offset;
 
         // Recessed track well: a flat C0 channel with a 2px dark bevel on the
         // left, a 2px light bevel on the right, run the full interior height.
-        RGBForeColor(&TRK_FILL);
-        port.fill_rect(Rect{.top = static_cast<int16_t>(by0 + 1), .left = ix0, .bottom = by1, .right = static_cast<int16_t>(ix1 + 1)});
-        vspan(ix0, static_cast<int16_t>(by0 + 1), static_cast<int16_t>(by1 - 1), TRK_S1);
-        vspan(static_cast<int16_t>(ix0 + 1), static_cast<int16_t>(by0 + 1), static_cast<int16_t>(by1 - 1), TRK_S2);
-        vspan(static_cast<int16_t>(ix1 - 1), static_cast<int16_t>(by0 + 1), static_cast<int16_t>(by1 - 1), TRK_H1);
-        vspan(ix1, static_cast<int16_t>(by0 + 1), static_cast<int16_t>(by1 - 1), TRK_H2);
+        paint.box(ix0, by0 + 1, ix1 + 1, by1, track_fill);
+        paint.vrun(ix0, by0 + 1, by1 - 1, track_shadow_dark);
+        paint.vrun(ix0 + 1, by0 + 1, by1 - 1, track_shadow);
+        paint.vrun(ix1 - 1, by0 + 1, by1 - 1, track_highlight);
+        paint.vrun(ix1, by0 + 1, by1 - 1, track_highlight_light);
 
         // Each track segment (above and below the thumb) is its own recessed
         // well with a 2px dark top bevel. Draw it at the channel top and just
         // below the thumb; whichever is hidden by the thumb is simply overdrawn.
-        auto seg_top = [&](int16_t y0) {
-          int16_t y1 = static_cast<int16_t>(y0 + 1);
+        auto seg_top = [&](int y0) {
+          int y1 = y0 + 1;
           if (y0 > by0 && y0 < by1) {
-            hspan(ix0, static_cast<int16_t>(ix1 - 1), y0, TRK_S1);
-            px(ix1, y0, TRK_H2);
+            paint.hrun(ix0, ix1 - 1, y0, track_shadow_dark);
+            paint.pixel(ix1, y0, track_highlight_light);
           }
           if (y1 > by0 && y1 < by1) {
-            px(ix0, y1, TRK_S1);
-            hspan(static_cast<int16_t>(ix0 + 1), static_cast<int16_t>(ix1 - 2), y1, TRK_S2);
-            px(static_cast<int16_t>(ix1 - 1), y1, TRK_H1);
-            px(ix1, y1, TRK_H2);
+            paint.pixel(ix0, y1, track_shadow_dark);
+            paint.hrun(ix0 + 1, ix1 - 2, y1, track_shadow);
+            paint.pixel(ix1 - 1, y1, track_highlight);
+            paint.pixel(ix1, y1, track_highlight_light);
           }
         };
-        seg_top(static_cast<int16_t>(by0 + 1));
-        seg_top(static_cast<int16_t>(thumb_top + th_h + 1));
+        seg_top(by0 + 1);
+        seg_top(thumb_top + th_h + 1);
 
         // Black frame around the whole bar.
-        hspan(bx0, bx1, by0, BLACK);
-        hspan(bx0, bx1, by1, BLACK);
-        vspan(bx0, by0, by1, BLACK);
-        vspan(bx1, by0, by1, BLACK);
+        paint.hrun(bx0, bx1, by0, black);
+        paint.hrun(bx0, bx1, by1, black);
+        paint.vrun(bx0, by0, by1, black);
+        paint.vrun(bx1, by0, by1, black);
 
         // Up / down arrow buttons grouped at the bottom (the original's
         // scroll-arrow placement), each a raised face with a centered triangle.
         // When pressed the same layout is drawn with the pushed-in palette.
-        auto draw_arrow = [&](int16_t b0, bool down, bool pressed) {
-          const RGBColor& face = pressed ? AR_FACE_P : AR_FACE;
-          const RGBColor& hi = pressed ? AR_HI_P : AR_HI;
-          const RGBColor& sh = pressed ? AR_SH_P : AR_SH;
-          int16_t b1 = static_cast<int16_t>(b0 + ar_h);
-          hspan(bx0, bx1, b0, BLACK);
-          hspan(bx0, bx1, b1, BLACK);
-          vspan(bx0, b0, b1, BLACK);
-          vspan(bx1, b0, b1, BLACK);
-          RGBForeColor(&face);
-          port.fill_rect(Rect{.top = static_cast<int16_t>(b0 + 1), .left = ix0, .bottom = b1, .right = static_cast<int16_t>(ix1 + 1)});
-          vspan(ix0, static_cast<int16_t>(b0 + 1), static_cast<int16_t>(b1 - 1), hi);
-          vspan(ix1, static_cast<int16_t>(b0 + 1), static_cast<int16_t>(b1 - 1), sh);
-          hspan(ix0, static_cast<int16_t>(ix1 - 1), static_cast<int16_t>(b0 + 1), hi);
-          px(ix1, static_cast<int16_t>(b0 + 1), face);
-          px(ix0, static_cast<int16_t>(b1 - 1), face);
-          hspan(static_cast<int16_t>(ix0 + 1), ix1, static_cast<int16_t>(b1 - 1), sh);
-          const int16_t widths[4] = {2, 4, 6, 8};
+        auto draw_arrow = [&](int b0, bool down, bool pressed) {
+          const RGBColor& face = pressed ? arrow_face_pressed : arrow_face;
+          const RGBColor& hi = pressed ? arrow_highlight_pressed : arrow_highlight;
+          const RGBColor& sh = pressed ? arrow_shadow_pressed : arrow_shadow;
+          int b1 = b0 + ar_h;
+          paint.hrun(bx0, bx1, b0, black);
+          paint.hrun(bx0, bx1, b1, black);
+          paint.vrun(bx0, b0, b1, black);
+          paint.vrun(bx1, b0, b1, black);
+          paint.box(ix0, b0 + 1, ix1 + 1, b1, face);
+          paint.vrun(ix0, b0 + 1, b1 - 1, hi);
+          paint.vrun(ix1, b0 + 1, b1 - 1, sh);
+          paint.hrun(ix0, ix1 - 1, b0 + 1, hi);
+          paint.pixel(ix1, b0 + 1, face);
+          paint.pixel(ix0, b1 - 1, face);
+          paint.hrun(ix0 + 1, ix1, b1 - 1, sh);
+          const int widths[4] = {2, 4, 6, 8};
           for (int k = 0; k < 4; k++) {
-            int16_t ry = down ? static_cast<int16_t>(b0 + 6 + (3 - k)) : static_cast<int16_t>(b0 + 6 + k);
-            int16_t half = static_cast<int16_t>(widths[k] / 2);
-            hspan(static_cast<int16_t>(cx - half), static_cast<int16_t>(cx + half - 1), ry, BLACK);
+            int ry = down ? b0 + 6 + (3 - k) : b0 + 6 + k;
+            int half = widths[k] / 2;
+            paint.hrun(cx - half, cx + half - 1, ry, black);
           }
         };
         draw_arrow(up_top, false, this->pressed_part == kControlUpButtonPart);
@@ -645,38 +660,38 @@ public:
         // interior rows. The thumb travels from the top of the track. While it
         // is being dragged it uses the darker pressed palette (same structure).
         const bool thumb_pressed = (this->pressed_part == kControlIndicatorPart);
-        const RGBColor& th_hi = thumb_pressed ? TH_HI_P : TH_HI;
-        const RGBColor& th_lt = thumb_pressed ? TH_LT_P : TH_LT;
-        const RGBColor& th_md = thumb_pressed ? TH_MD_P : TH_MD;
-        const RGBColor& th_sh = thumb_pressed ? TH_SH_P : TH_SH;
-        const RGBColor& th_gr = thumb_pressed ? TH_GR_P : TH_GR;
-        const int16_t tt = thumb_top;
-        hspan(bx0, bx1, tt, BLACK);
-        hspan(bx0, bx1, static_cast<int16_t>(tt + th_h), BLACK);
-        vspan(bx0, tt, static_cast<int16_t>(tt + th_h), BLACK);
-        vspan(bx1, tt, static_cast<int16_t>(tt + th_h), BLACK);
-        const int16_t n = static_cast<int16_t>(ix1 - ix0 + 1);
+        const RGBColor& th_hi = thumb_pressed ? thumb_highlight_pressed : thumb_highlight;
+        const RGBColor& th_lt = thumb_pressed ? thumb_light_pressed : thumb_light;
+        const RGBColor& th_md = thumb_pressed ? thumb_mid_pressed : thumb_mid;
+        const RGBColor& th_sh = thumb_pressed ? thumb_shadow_pressed : thumb_shadow;
+        const RGBColor& th_gr = thumb_pressed ? thumb_grip_pressed : thumb_grip;
+        const int tt = thumb_top;
+        paint.hrun(bx0, bx1, tt, black);
+        paint.hrun(bx0, bx1, tt + th_h, black);
+        paint.vrun(bx0, tt, tt + th_h, black);
+        paint.vrun(bx1, tt, tt + th_h, black);
+        const int n = ix1 - ix0 + 1;
         for (int ri = 0; ri < th_h - 1; ri++) {
-          int16_t y = static_cast<int16_t>(tt + 1 + ri);
+          int y = tt + 1 + ri;
           if (ri == 0) {
-            px(ix0, y, th_hi);
-            hspan(static_cast<int16_t>(ix0 + 1), static_cast<int16_t>(ix1 - 1), y, th_lt);
-            px(ix1, y, th_md);
+            paint.pixel(ix0, y, th_hi);
+            paint.hrun(ix0 + 1, ix1 - 1, y, th_lt);
+            paint.pixel(ix1, y, th_md);
           } else if (ri == th_h - 2) {
-            px(ix0, y, th_md);
-            hspan(static_cast<int16_t>(ix0 + 1), ix1, y, th_sh);
+            paint.pixel(ix0, y, th_md);
+            paint.hrun(ix0 + 1, ix1, y, th_sh);
           } else {
-            px(ix0, y, th_lt);
-            hspan(static_cast<int16_t>(ix0 + 1), static_cast<int16_t>(ix1 - 1), y, th_md);
-            px(ix1, y, th_sh);
+            paint.pixel(ix0, y, th_lt);
+            paint.hrun(ix0 + 1, ix1 - 1, y, th_md);
+            paint.pixel(ix1, y, th_sh);
           }
           // Embossed grip: alternating bright/light and dark rows in the center.
           if (n >= 14 && ri >= 3 && ri <= 10) {
             if (ri % 2 == 1) { // ri 3,5,7,9
-              px(static_cast<int16_t>(ix0 + 3), y, th_hi);
-              hspan(static_cast<int16_t>(ix0 + 4), static_cast<int16_t>(ix0 + 9), y, th_lt);
+              paint.pixel(ix0 + 3, y, th_hi);
+              paint.hrun(ix0 + 4, ix0 + 9, y, th_lt);
             } else { // ri 4,6,8,10
-              hspan(static_cast<int16_t>(ix0 + 4), static_cast<int16_t>(ix0 + 10), y, th_gr);
+              paint.hrun(ix0 + 4, ix0 + 10, y, th_gr);
             }
           }
         }
