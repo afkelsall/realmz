@@ -118,11 +118,12 @@ short load(void) {
   fseek(fp, 0, SEEK_END);
   size_t file_size = ftell(fp);
   fseek(fp, 0, SEEK_SET);
-  // The original retail builds wrote `cancamp` as an array of 10 shorts (20 bytes) even though it is a single short.
-  // This was a buffer overflow, but it is part of the on-disk format: those saves are 18 bytes larger than the ones
-  // this port writes by default. Detect that variant by file size so retail Mac saves load correctly. Those saves also
-  // store the `bank` and `templecost` fields big-endian like every other multi-byte field (see below), so the same flag
-  // gates the byte swap for them.
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * The original retail builds wrote `cancamp` as an array of 10 shorts (20 bytes) even though it is a single short.
+   * This was a buffer overflow, but it is part of the on-disk format: those saves are 18 bytes larger than the ones
+   * this port writes by default. Detect that variant by file size so retail Mac saves load correctly. Those saves also
+   * store the `bank` and `templecost` fields big-endian like every other multi-byte field (see below), so the same flag
+   * gates the byte swap for them. */
   int use_extended_long_format;
   int use_original_format;
   if (file_size == 0x3979) { // Modern Realmz Classic format (cancamp as a single short)
@@ -137,6 +138,7 @@ short load(void) {
   } else {
     scratch2(7);
   }
+  /* *** END CHANGES *** */
 
 // Fantasoft v7.0 Begin   I don't want the PC and Mac saved games to be compatible so I switched the save order of
 // Some important data to keep them from being compatible
