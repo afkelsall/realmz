@@ -46,10 +46,17 @@ short resist(short who) {
     }
   }
 
-  if ((who > 9) && (spellinfo.spellclass < 7)) {
+  /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+   * spellimmune has six entries (classes 0-5), but this guard used "< 7", which
+   * let a class 6 spell (Cosmic Blast) index spellimmune[6], one past the array.
+   * The field that follows in memory is the byte-swapped money[0], so any monster
+   * carrying gold read as immune and always resisted. resolvespell.c already uses
+   * the correct "< 6" guard for the same spellimmune lookup; match it here. */
+  if ((who > 9) && (spellinfo.spellclass < 6)) {
     if ((monster[who - 10].spellimmune[spellinfo.spellclass]) || (monster[who - 10].magres > 100))
       return (TRUE);
   }
+  /* *** END CHANGES *** */
 
   if (((spellinfo.cannot == 1) || (spellinfo.cannot > 2)) && (spellinfo.spellclass != 9) && (spellinfo.spellclass != -9))
     return (FALSE);
