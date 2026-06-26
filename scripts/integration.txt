@@ -17,5 +17,9 @@ iSynic/fix-sndplay-sync
 fix-treasure-screen
 fix-windows-popup-disabled-item
 fix-cicn-empty-bitmap-crash
+# fix-item-tohit-toggle is built on fix-weapon-tohit-rating, so it already carries the
+# port menu, the "Fix weapon to hit rating" toggle and the debug logging, plus the new
+# "Fix item to hit rating" toggle. Listing the other two as well would merge them twice.
 # debug-tohit-logging
 # fix-weapon-tohit-rating
+fix-item-tohit-toggle
