@@ -52,6 +52,14 @@ and gives a repeatable recipe for reading raw values straight out of `base/Realm
 ID`, plus the key gotcha that an item's printed "+N" name is an independent string and need not
 match its real `item.damage` plus.
 
+When asked why a spell behaves a certain way, what a spell's real parameters are, or what a
+monster's stats are (magic resistance, saves, immunities, HD), read
+**`agent/docs/spell-monster-data.md`** first. It documents the on-disk layout of `struct spell`
+(`Data S`) and `struct monster` (the `Data MD` family), the lookup quirks (spell `spelldata`
+caste index is class minus 1; monsters are found by the `monname` anchor), the byte-order rules,
+and a repeatable recipe for reading raw values. It also records the `spellimmune[6]` out-of-bounds
+read that made class 6 spells (Cosmic Blast) always resisted.
+
 ### Platform branches
 
 `CMakeLists.txt` has `if(APPLE) ... elseif(WIN32) ...` with **no Linux branch**. macOS adds
