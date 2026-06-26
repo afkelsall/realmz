@@ -27,6 +27,11 @@ UPSTREAM_REMOTE=origin          # Realmz-Castle/realmz in this checkout
 BASE_BRANCH=main
 INTEG_BRANCH=integration
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# This script lives in <repo>/scripts; integration.txt sits beside it. The git
+# operations below act on the repo, so run them from the repo root regardless of
+# where the script was invoked from.
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
 BRANCH_LIST="$SCRIPT_DIR/integration.txt"
 
 # --no-build flag: merge only, skip the Windows build.

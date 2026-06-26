@@ -25,16 +25,20 @@ set -euo pipefail
 
 # ---- Configuration (override via environment) --------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# This script lives in <repo>/scripts; the repo root is one level up. Build
+# artifacts, fetched dep sources, and the CMake source dir all hang off the root,
+# while the toolchain file ships alongside this script in scripts/.
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LLVM_MINGW_ROOT="${LLVM_MINGW_ROOT:-/opt/llvm-mingw}"
 TOOLCHAIN_FILE="${TOOLCHAIN_FILE:-${SCRIPT_DIR}/TC-mingw.cmake}"
 DEPS_PREFIX="${DEPS_PREFIX:-${HOME}/mingw-install}"   # where cross-built deps install
-DEPS_SRC="${DEPS_SRC:-${SCRIPT_DIR}/.deps-src}"        # where dep sources get cloned
-BUILD_DIR="${BUILD_DIR:-${SCRIPT_DIR}/build_win}"
+DEPS_SRC="${DEPS_SRC:-${REPO_ROOT}/.deps-src}"        # where dep sources get cloned
+BUILD_DIR="${BUILD_DIR:-${REPO_ROOT}/build_win}"
 # Separate build tree for the Debug diagnostic exe (Realmz-debug.exe). Built with
 # debug symbols, the original code's verbose per-primitive logging, and
 # AddressSanitizer, so a crash prints where and why it died. Skipped with
 # --release-only.
-DEBUG_BUILD_DIR="${DEBUG_BUILD_DIR:-${SCRIPT_DIR}/build_win_debug}"
+DEBUG_BUILD_DIR="${DEBUG_BUILD_DIR:-${REPO_ROOT}/build_win_debug}"
 # Default to Release: phosg::Image's per-pixel rendering loops are dramatically
 # faster optimized, and Release drops the per-primitive debug logging. Override
 # with BUILD_TYPE=Debug for local debugging.
@@ -118,15 +122,15 @@ write_launcher() {  # dest exe stem extra_env_line
     exit 1
 }
 
-if [ ! -e "${SCRIPT_DIR}/vendored/SDL/CMakeLists.txt" ]; then
+if [ ! -e "${REPO_ROOT}/vendored/SDL/CMakeLists.txt" ]; then
     log "Initializing git submodules (SDL, SDL_ttf, SDL_image)"
-    git -C "${SCRIPT_DIR}" submodule update --init --recursive
+    git -C "${REPO_ROOT}" submodule update --init --recursive
 fi
 
-if [ -f "${SCRIPT_DIR}/vendored/SDL_ttf/external/download.sh" ] \
-   && [ ! -d "${SCRIPT_DIR}/vendored/SDL_ttf/external/freetype/include" ]; then
+if [ -f "${REPO_ROOT}/vendored/SDL_ttf/external/download.sh" ] \
+   && [ ! -d "${REPO_ROOT}/vendored/SDL_ttf/external/freetype/include" ]; then
     log "Downloading SDL_ttf external dependencies (freetype, etc.)"
-    ( cd "${SCRIPT_DIR}/vendored/SDL_ttf/external" && ./download.sh )
+    ( cd "${REPO_ROOT}/vendored/SDL_ttf/external" && ./download.sh )
 fi
 
 # ---- Build cross-compiled dependencies ---------------------------------------
@@ -175,7 +179,7 @@ fi
 
 # ---- Configure & build Realmz ------------------------------------------------
 log "Configuring Realmz"
-cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
+cmake -S "${REPO_ROOT}" -B "${BUILD_DIR}" \
     -G Ninja \
     -D CMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
     -D CMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
@@ -192,7 +196,7 @@ cmake --build "${BUILD_DIR}" --target package --parallel "${JOBS}"
 # the Release one in the test folder as Realmz-debug.exe.
 if [ "${SKIP_DEBUG}" -eq 0 ]; then
     log "Configuring Realmz (Debug diagnostic build)"
-    cmake -S "${SCRIPT_DIR}" -B "${DEBUG_BUILD_DIR}" \
+    cmake -S "${REPO_ROOT}" -B "${DEBUG_BUILD_DIR}" \
         -G Ninja \
         -D CMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
         -D CMAKE_PREFIX_PATH="${DEPS_PREFIX}" \

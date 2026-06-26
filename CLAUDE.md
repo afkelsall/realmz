@@ -46,7 +46,7 @@ data, so **byte order and struct alignment matter** - a whole class of historica
 misaligned/wrong-endianness reads.
 
 When asked about a specific item's real stats (magic plus, to-hit, damage, AC, or what an item
-actually does versus what its name claims), read **`.agent/docs/item-data.md`** first. It
+actually does versus what its name claims), read **`agent/docs/item-data.md`** first. It
 documents the item data model (`struct itemattr`, the `all*` tables, where stats vs names live)
 and gives a repeatable recipe for reading raw values straight out of `base/Realmz/Data Files/Data
 ID`, plus the key gotcha that an item's printed "+N" name is an independent string and need not
@@ -65,7 +65,7 @@ The toolchain is **non-negotiable: llvm-mingw (Clang)**. The build passes `-fpas
 which **MSVC and mainline MinGW-GCC reject** - only Clang accepts it. So MSVC/Visual Studio and
 CLion's default GCC toolchain do not work without removing that flag.
 
-Cross-compile is automated by **`build-windows.sh`** + **`TC-mingw.cmake`** in the repo root:
+Cross-compile is automated by **`scripts/build-windows.sh`** + **`scripts/TC-mingw.cmake`**:
 
 ```bash
 # Ubuntu host, one-time:
@@ -73,8 +73,8 @@ sudo apt install -y cmake ninja-build git build-essential nsis
 # download llvm-mingw-*-ucrt-ubuntu-*.tar.xz, extract to /opt/llvm-mingw (or set LLVM_MINGW_ROOT)
 git submodule update --init --recursive
 
-./build-windows.sh              # builds zlib + phosg + resource_dasm, then Realmz + installer
-./build-windows.sh --skip-deps  # fast re-build after editing Realmz source only
+./scripts/build-windows.sh              # builds zlib + phosg + resource_dasm, then Realmz + installer
+./scripts/build-windows.sh --skip-deps  # fast re-build after editing Realmz source only
 ```
 
 What the script does, in order: inits submodules -> fetches SDL_ttf externals
@@ -97,32 +97,45 @@ flag), not CMake plumbing.
 
 ### Integration branch + test release (one command)
 
-`rebuild-integration.sh` rebuilds the **local-only, disposable** `integration` branch and
-produces a Windows test release in one step. These scripts and `integration.txt` are
-developer-local (excluded / untracked) and never pushed; the `integration` branch is
-recreated from scratch each run, so never open a PR from it.
+`scripts/rebuild-integration.sh` rebuilds the **local-only, disposable** `integration` branch
+and produces a Windows test release in one step. These scripts and `scripts/integration.txt`
+are not part of the Realmz repo: they live in the separate `gitl` overlay repo (see "Local-only
+files" below), so they never appear in a Realmz feature branch or PR. The `integration` branch
+itself is recreated from scratch each run, so never open a PR from it.
 
 ```bash
-./rebuild-integration.sh              # merge branches from integration.txt, then build + copy
-./rebuild-integration.sh --no-build   # merge only, skip the Windows build
+./scripts/rebuild-integration.sh              # merge branches from integration.txt, then build + copy
+./scripts/rebuild-integration.sh --no-build   # merge only, skip the Windows build
 ```
 
 What it does: refreshes `main` from `origin`, deletes and recreates `integration`, then merges
-each branch listed in **`integration.txt`** (one per line; `#` comments and blank lines ignored)
-**sequentially**, so git **rerere** can replay a recorded resolution for a known conflict and
-the script auto-commits the merge. If a conflict has no recorded resolution it stops with the
-merge in progress - resolve it, `git commit`, then re-run; your commit teaches rerere, so the
-next run resolves it automatically. After a clean merge it runs `build-windows.sh --skip-deps`,
-which copies the `.exe` installer + `.zip` into the shared folder (`/mnt/mahd`, override with
-`REALMZ_SHARE_DIR`) and drops the raw `Realmz.exe` into the extracted test folder there
-(`Realmz-8.1.0-win64/`, name derived from the zip) so it is immediately runnable.
+each branch listed in **`scripts/integration.txt`** (one per line; `#` comments and blank lines
+ignored) **sequentially**, so git **rerere** can replay a recorded resolution for a known
+conflict and the script auto-commits the merge. If a conflict has no recorded resolution it
+stops with the merge in progress - resolve it, `git commit`, then re-run; your commit teaches
+rerere, so the next run resolves it automatically. After a clean merge it runs
+`scripts/build-windows.sh --skip-deps`, which copies the `.exe` installer + `.zip` into the
+shared folder (`/mnt/mahd`, override with `REALMZ_SHARE_DIR`) and drops the raw `Realmz.exe`
+into the extracted test folder there (`Realmz-8.1.0-win64/`, name derived from the zip) so it
+is immediately runnable.
 
-To change what goes into the test release, edit `integration.txt` - that is the single source
-of truth for the branch list.
+To change what goes into the test release, edit `scripts/integration.txt` - that is the single
+source of truth for the branch list. **When you create a feature branch that should be tested in
+the next build, add its name to `scripts/integration.txt`** and commit that to the `gitl`
+overlay (not the Realmz repo). Drop a branch from the list once it has merged to `main`.
 
-**Branch notes:** `branches.md` (also excluded, repo root) lists local branches that should
-be excluded when auditing what is and isn't merged or has an open PR -- research branches,
-disposable branches, and tracking branches that are not feature work.
+**Branch notes:** `branches.md` (repo root, also in the `gitl` overlay) lists local branches
+that should be excluded when auditing what is and isn't merged or has an open PR -- research
+branches, disposable branches, and tracking branches that are not feature work.
+
+### Local-only files (the `gitl` overlay repo)
+
+Developer-local files (this `CLAUDE.md`, `scripts/`, `branches.md`, `agent/`) are tracked in a
+**separate git repo overlaid on the same working tree**, not in the Realmz repo, so they can
+never leak into a Realmz branch or PR. Drive that repo with the `gitl` alias instead of `git`.
+Full details, including the rule for when something belongs in the overlay versus a real Realmz
+branch, are in **`agent/docs/local-overlay.md`** - read it before adding, moving, or committing
+any of these files.
 
 ## Conventions & gotchas for changes
 
