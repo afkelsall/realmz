@@ -1,0 +1,21 @@
+# Branches merged into the local "integration" branch.
+# Local-only and disposable: the integration branch is recreated from a fresh
+# main on every run, never pushed, never turned into a PR.
+#
+# One branch per line. Blank lines and lines starting with # are ignored.
+
+original-font-baseline
+shop-drag-item-icon
+fix-shop-scrollbar
+# fix-original-save-compat
+fix-windows-volume-menu
+chromancer/port-menu-v2
+windows-popup-menu-location
+chromancer/addl-char-file-handling
+chromancer/reinstate-scroll
+iSynic/fix-sndplay-sync
+fix-treasure-screen
+fix-windows-popup-disabled-item
+fix-cicn-empty-bitmap-crash
+# debug-tohit-logging
+# fix-weapon-tohit-rating
