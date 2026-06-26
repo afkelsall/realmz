@@ -29,7 +29,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # artifacts, fetched dep sources, and the CMake source dir all hang off the root,
 # while the toolchain file ships alongside this script in scripts/.
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-LLVM_MINGW_ROOT="${LLVM_MINGW_ROOT:-/opt/llvm-mingw}"
+# Pinned to the llvm-mingw 20250114 build (Clang 19.1.7). The newer /opt/llvm-mingw
+# (Clang 22) turns a long-standing -Wincompatible-pointer-types warning in the
+# original C code (e.g. checkkeypad.c) into a hard error, breaking a clean build.
+# Override with LLVM_MINGW_ROOT to use a different toolchain.
+LLVM_MINGW_ROOT="${LLVM_MINGW_ROOT:-${HOME}/llvm-mingw-20250114-ucrt-ubuntu-20.04-x86_64}"
 TOOLCHAIN_FILE="${TOOLCHAIN_FILE:-${SCRIPT_DIR}/TC-mingw.cmake}"
 DEPS_PREFIX="${DEPS_PREFIX:-${HOME}/mingw-install}"   # where cross-built deps install
 DEPS_SRC="${DEPS_SRC:-${REPO_ROOT}/.deps-src}"        # where dep sources get cloned
