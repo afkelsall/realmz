@@ -10,16 +10,27 @@ fix-shop-scrollbar
 # fix-original-save-compat
 fix-windows-volume-menu
 chromancer/port-menu-v2
-windows-popup-menu-location
+# windows-popup-menu-location was absorbed into the rebased chromancer/port-menu-v2
+# (commit "honor popup menu location on windows instead of cursor"), so merging it now
+# only produces redundant conflicts. Drop it; restore if port-menu-v2 ever loses that work.
+# windows-popup-menu-location
 chromancer/addl-char-file-handling
 chromancer/reinstate-scroll
 iSynic/fix-sndplay-sync
 fix-treasure-screen
 fix-windows-popup-disabled-item
 fix-cicn-empty-bitmap-crash
-# fix-item-tohit-toggle is built on fix-weapon-tohit-rating, so it already carries the
-# port menu, the "Fix weapon to hit rating" toggle and the debug logging, plus the new
-# "Fix item to hit rating" toggle. Listing the other two as well would merge them twice.
-# debug-tohit-logging
-# fix-weapon-tohit-rating
-fix-item-tohit-toggle
+fix-cosmic-blast-resist
+
+# tohit-balance-debug is a local-only balance/debug branch built on
+# chromancer/port-menu-v2 (already merged above, so only its own commit applies).
+# It adds one Port > Configure Game Changes > "Fix to hit rating" toggle: when on,
+# every equipped item's magic plus (weapon and worn gear) adds 5 per point to the
+# player's melee to-hit, computed live in attack() so the toggle takes effect on
+# the next swing with no save format change. It also writes an always-on,
+# fixed-width, one-line-per-swing log to "ToHit Debug.txt" for tuning. This
+# replaces the old fix-item-tohit-toggle (which had two separate weapon and item
+# toggles built on the unconditional fix-weapon-tohit-rating). The real non-toggle
+# fix lives separately on fix-item-tohit-rating (Option B, folds the bonus into
+# character.tohit at load and on equip/unequip).
+tohit-balance-debug
