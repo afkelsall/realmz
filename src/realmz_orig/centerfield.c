@@ -82,8 +82,19 @@ void centerfield(short x, short y) {
         CopyBits(src, dst, &itemRect, &icon, 0, NIL);
 
       } else if (tempicon > -1) {
-        bodyground(tempicon, 1);
-        bq[tempicon] = TRUE;
+        /* *** CHANGED FROM ORIGINAL IMPLEMENTATION ***
+         * Bound the body id before using it to index bq and the body arrays.
+         * bq is char[maxloop] and only body ids 0..maxloop-1 are valid (party
+         * 0..8, monsters 10..10+maxmon-1). A stray field cell holding maxloop
+         * or more made bq[tempicon] = TRUE write past the end of bq on the
+         * stack, corrupting a saved register and crashing later in the same
+         * combat turn. The redraw loop below already bounds its index with
+         * t < maxloop; match it here so an out-of-range id is skipped. */
+        if (tempicon < maxloop) {
+          bodyground(tempicon, 1);
+          bq[tempicon] = TRUE;
+        }
+        /* *** END CHANGES *** */
       }
     }
   }
