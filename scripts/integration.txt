@@ -21,6 +21,7 @@ fix-treasure-screen
 fix-windows-popup-disabled-item
 fix-cicn-empty-bitmap-crash
 fix-cosmic-blast-resist
+fix-centerfield-body-overflow
 
 # tohit-balance-debug is a local-only balance/debug branch built on
 # chromancer/port-menu-v2 (already merged above, so only its own commit applies).
