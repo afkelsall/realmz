@@ -249,6 +249,19 @@ Keep each point to a single short line of plain prose. Use a plain ASCII hyphen 
 marker (never an em dash or other smart punctuation). No testing steps, checklists, or
 checkboxes. No AI markers. Keep the whole thing to what a maintainer needs to review the change.
 
+A few more rules for these descriptions (and for issues):
+
+- Wrap code in backticks. Function and variable names, struct fields, file paths, and small
+  expressions (`centerfield`, `bq[tempicon]`, `t < maxloop`, `char[maxloop]`) all go in
+  backticks so they render as code, not prose.
+- Put everything a reviewer needs in the description itself. Do not add a separate PR comment to
+  carry context the description should hold; if asked to add or change a note, edit the
+  description (via the REST API if `gh pr edit` fails on this repo's deprecated Projects call).
+- Classify the bug in the `Why:` points. Say whether it lives in the original game logic
+  (`src/realmz_orig/`) or the SDL compatibility shim (`src/`), and whether it is platform
+  specific (macOS vs Windows) or the same defect on every target that only happens to surface on
+  one. State it plainly rather than leaving the maintainer to guess.
+
 Example shape (PR #249, "Clip party roster stat numbers to their boxes"):
 
 ```
