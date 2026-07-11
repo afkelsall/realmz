@@ -23,15 +23,23 @@ fix-cicn-empty-bitmap-crash
 fix-cosmic-blast-resist
 fix-centerfield-body-overflow
 
-# tohit-balance-debug is a local-only balance/debug branch built on
-# chromancer/port-menu-v2 (already merged above, so only its own commit applies).
-# It adds one Port > Configure Game Changes > "Fix to hit rating" toggle: when on,
-# every equipped item's magic plus (weapon and worn gear) adds 5 per point to the
-# player's melee to-hit, computed live in attack() so the toggle takes effect on
-# the next swing with no save format change. It also writes an always-on,
-# fixed-width, one-line-per-swing log to "ToHit Debug.txt" for tuning. This
-# replaces the old fix-item-tohit-toggle (which had two separate weapon and item
-# toggles built on the unconditional fix-weapon-tohit-rating). The real non-toggle
-# fix lives separately on fix-item-tohit-rating (Option B, folds the bonus into
-# character.tohit at load and on equip/unequip).
+# tohit-balance-debug is a local-only balance/debug branch. It now carries a merge of
+# main and chromancer/port-menu-v2 plus one commit of its own, so it applies cleanly
+# wherever it sits in this list. The merge of main is deliberate: main added #268's
+# weapon to-hit line, and without it in the branch's base the merge would keep that
+# line alongside the new equipped-gear sum and count the wielded weapon twice.
+#
+# It adds one Port > Configure Game Changes > "Fix to hit rating" toggle that switches
+# the whole of PR #290 on and off at runtime. On: the magic plus of every equipped item
+# (weapon and worn gear) adds 5 per point to melee to-hit exactly once, in the shared
+# path so armed, unarmed and animated attackers all get it, and the weapon's plus stops
+# being added to damage twice and stops adding to-hit on its own. Off: matches main.
+# Either way it writes an always-on, fixed-width, one-line-per-swing log to
+# "ToHit Debug.txt", including the gear sum in both states so an off line already shows
+# what turning it on would add.
+#
+# This replaces the earlier experiments (the two-toggle fix-item-tohit-toggle, and the
+# approach that derived the bonus from character.damage minus the brawn term). The real
+# non-toggle fix lives separately on fix-item-tohit-rating (Option B, folds the bonus
+# into character.tohit at load and on equip/unequip).
 tohit-balance-debug
