@@ -8,7 +8,12 @@ original-font-baseline
 shop-drag-item-icon
 fix-shop-scrollbar
 # fix-original-save-compat
-fix-windows-volume-menu
+# fix-windows-volume-menu landed on main as PR #236 (squash merged 2026-07-11), so main
+# already has BuildMenu/hMenuCmd and the volume and speed submenus. The local branch is now
+# strictly behind main: it predates the Port menu, the popup location fix and the window
+# size handling, so merging it re-added a duplicate BuildMenu and WinMenuSync (a compile
+# error) and its conflict resolutions pulled main's newer work backwards. Dropped.
+# fix-windows-volume-menu
 chromancer/port-menu-v2
 # windows-popup-menu-location was absorbed into the rebased chromancer/port-menu-v2
 # (commit "honor popup menu location on windows instead of cursor"), so merging it now
