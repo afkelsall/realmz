@@ -4,47 +4,25 @@
 #
 # One branch per line. Blank lines and lines starting with # are ignored.
 
-original-font-baseline
-shop-drag-item-icon
-fix-shop-scrollbar
-# fix-original-save-compat
-# fix-windows-volume-menu landed on main as PR #236 (squash merged 2026-07-11), so main
-# already has BuildMenu/hMenuCmd and the volume and speed submenus. The local branch is now
-# strictly behind main: it predates the Port menu, the popup location fix and the window
-# size handling, so merging it re-added a duplicate BuildMenu and WinMenuSync (a compile
-# error) and its conflict resolutions pulled main's newer work backwards. Dropped.
-# fix-windows-volume-menu
-chromancer/port-menu-v2
-# windows-popup-menu-location was absorbed into the rebased chromancer/port-menu-v2
-# (commit "honor popup menu location on windows instead of cursor"), so merging it now
-# only produces redundant conflicts. Drop it; restore if port-menu-v2 ever loses that work.
-# windows-popup-menu-location
-chromancer/addl-char-file-handling
-chromancer/reinstate-scroll
-iSynic/fix-sndplay-sync
-fix-treasure-screen
-fix-windows-popup-disabled-item
-fix-cicn-empty-bitmap-crash
-fix-cosmic-blast-resist
-fix-centerfield-body-overflow
+# --- Open PRs (still to land on main) ---
+fix-treasure-screen              # PR #263
+fix-windows-popup-disabled-item  # PR #264
 
-# tohit-balance-debug is a local-only balance/debug branch. It now carries a merge of
-# main and chromancer/port-menu-v2 plus one commit of its own, so it applies cleanly
-# wherever it sits in this list. The merge of main is deliberate: main added #268's
-# weapon to-hit line, and without it in the branch's base the merge would keep that
-# line alongside the new equipped-gear sum and count the wielded weapon twice.
-#
-# It adds one Port > Configure Game Changes > "Fix to hit rating" toggle that switches
-# the whole of PR #290 on and off at runtime. On: the magic plus of every equipped item
-# (weapon and worn gear) adds 5 per point to melee to-hit exactly once, in the shared
-# path so armed, unarmed and animated attackers all get it, and the weapon's plus stops
-# being added to damage twice and stops adding to-hit on its own. Off: matches main.
-# Either way it writes an always-on, fixed-width, one-line-per-swing log to
-# "ToHit Debug.txt", including the gear sum in both states so an off line already shows
-# what turning it on would add.
-#
-# This replaces the earlier experiments (the two-toggle fix-item-tohit-toggle, and the
-# approach that derived the bonus from character.damage minus the brawn term). The real
-# non-toggle fix lives separately on fix-item-tohit-rating (Option B, folds the bonus
-# into character.tohit at load and on equip/unequip).
-tohit-balance-debug
+# --- Merged to main (kept commented for history) ---
+# original-font-baseline             PR #251
+# shop-drag-item-icon                PR #244
+# fix-shop-scrollbar                 PR #243
+# fix-original-save-compat           PR #241
+# chromancer/port-menu-v2            PR #256
+# chromancer/addl-char-file-handling PR #258
+# chromancer/reinstate-scroll        PR #257
+# iSynic/fix-sndplay-sync            PR #253
+# fix-cicn-empty-bitmap-crash        PR #266
+# fix-cosmic-blast-resist            PR #276
+# fix-centerfield-body-overflow      PR #277
+
+# --- Dropped (not merged; here so they are not re-added by mistake) ---
+# fix-windows-volume-menu is strictly behind main: its work landed as PR #236 and
+# merging it now re-adds a duplicate BuildMenu/WinMenuSync and pulls newer work back.
+# windows-popup-menu-location was absorbed into the rebased chromancer/port-menu-v2
+# ("honor popup menu location on windows instead of cursor"), so it only conflicts now.
